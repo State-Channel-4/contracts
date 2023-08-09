@@ -115,4 +115,18 @@ describe("UrlContract", function () {
 
     });
   });
+
+  describe("Sync state from backend", async function () {
+    it("Should succesfully load a bunch of urls to the contract state", async function () {
+      const { urlContract, owner, otherAccount1 } = await loadFixture(deployUrlContractFixture);
+
+      await expect(
+        urlContract.connect(owner).syncState()
+      ).not.to.be.revertedWith("Ownable: caller is not the owner");
+
+      await expect(
+        urlContract.connect(otherAccount1).syncState()
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+  });
 });

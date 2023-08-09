@@ -3,8 +3,9 @@ pragma solidity ^0.8.9;
 
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract UrlContract {
+contract UrlContract is Ownable {
 
     struct URL {
         string title;
@@ -195,5 +196,11 @@ contract UrlContract {
         users[userAddress].numberOfLikedURLs = users[userAddress].numberOfLikedURLs - 1;
         users[userAddress].likedURLs[index] = false;
         urls.list[index].likes = urls.list[index].likes - 1;
+    }
+
+    /// @notice Sync URLs state with the backend
+    /// @dev This function should be called by the backend to sync the state of the URLs
+    function syncState() public onlyOwner {
+        // TODO: implement function
     }
 }
