@@ -19,11 +19,13 @@ describe("UrlContract", function () {
 
   async function submitURLFixture(){
     const { urlContract, owner, otherAccount1, otherAccount2 } = await loadFixture(deployUrlContractFixture);
+    const id = "0x6480d8e214e8da349c096609";
     const title = "Google";
     const url = "https://www.google.com/";
     const tags = [firstTag, "web search"];
-    const urlObj = { title, url, tags };
+    const urlObj = { id, title, url, tags };
     await urlContract.connect(otherAccount1).submitURL(
+      urlObj.id,
       urlObj.title,
       urlObj.url,
       urlObj.tags,
@@ -87,7 +89,7 @@ describe("UrlContract", function () {
       expect( firstUrlObject.tagIds.length ).to.equal(urlObj.tags.length);
       // check tag ids are correct
       for (let i = 0, ni = urlObj.tags.length; i<ni; i++){
-        expect( firstUrlObject.tagIds[i].toNumber() ).to.equal(i);
+        expect( Number(firstUrlObject.tagIds[i]) ).to.equal(i);
       }
     });
 
@@ -105,11 +107,11 @@ describe("UrlContract", function () {
       const { urlContract, otherAccount1 } = await loadFixture(likeURLFixture);
 
       const url = await urlContract.getURL(0);
-      expect( url.likes.toNumber() ).to.equal(1);
+      expect( Number(url.likes) ).to.equal(1);
 
       const userLikedURLs = await urlContract.getUserLikedURLs(otherAccount1.address);
       expect( userLikedURLs.length ).to.equal(1);
-      expect (userLikedURLs[0].likes.toNumber() ).to.equal(1);
+      expect ( Number(userLikedURLs[0].likes) ).to.equal(1);
 
     });
   });

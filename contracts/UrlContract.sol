@@ -26,12 +26,17 @@ contract UrlContract {
         uint256[] submittedURLs;
     }
 
+    struct URLs {
+        URL[] list;
+        mapping (bytes12 => uint256) ids;
+    }
+
     struct Tags {
         Tag[] list;
         mapping (string => uint256) names;
     }
 
-    URL[] private urls;
+    URLs private urls;
     Tags private tags;
     mapping (address => User) private users;
 
@@ -48,10 +53,10 @@ contract UrlContract {
     /// @param title URL content title
     /// @param url URL link
     /// @param _tags Tag names list associated with URL.
-    function submitURL(string memory title, string memory url, string[] calldata _tags) public {
+    function submitURL(bytes12 id, string memory title, string memory url, string[] calldata _tags) public {
         require(bytes(title).length > 0 && bytes(url).length > 0 && _tags.length > 0, "Invalid input");
         // If tx fails then changes rollback. We can be sure url index in the beginning = url index in the end
-        uint256 urlIndex = urls.length;
+        uint256 urlIndex = urls.list.length;
         // get tag indexes or create new tags. Also add url index to each tag
         uint256[] memory tagIndexes = new uint256[](_tags.length);
         for (uint256 i = 0; i < _tags.length; i++) {
@@ -60,7 +65,8 @@ contract UrlContract {
         }
         // add new url to array
         URL memory newURL = URL(title, url, msg.sender, 0, tagIndexes);
-        urls.push(newURL);
+        urls.list.push(newURL);
+        urls.ids[id] = urlIndex;
     }
 
     /// @notice Get a tag id from array or add a new tag if it doesn't exist
@@ -107,14 +113,14 @@ contract UrlContract {
         uint256 length = urlIds.length;
         URL[] memory result = new URL[](length);
         for (uint256 i =0; i < length; i ++){
-            result[i] = urls[urlIds[i]];
+            result[i] = urls.list[urlIds[i]];
         }
         return result;
     }
 
     /// @notice Retrieve all registered URLs
     function getAllURLs() public view returns (URL[] memory) {
-        return urls;
+        return urls.list;
     }
 
     /// @notice Retrieve all registered tags
@@ -128,7 +134,7 @@ contract UrlContract {
         uint256[] memory userSubmittedURLs = users[userAddress].submittedURLs;
         URL[] memory result = new URL[](userSubmittedURLs.length);
         for (uint256 i = 0; i < userSubmittedURLs.length; i++) {
-            result[i] = urls[userSubmittedURLs[i]];
+            result[i] = urls.list[userSubmittedURLs[i]];
         }
         return result;
     }
@@ -136,8 +142,8 @@ contract UrlContract {
     /// @notice Get a specific URL
     /// @param index URL id
     function getURL(uint256 index) public view returns (URL memory) {
-        require(index < urls.length, "Invalid URL index");
-        return urls[index];
+        require(index < urls.list.length, "Invalid URL index");
+        return urls.list[index];
     }
 
     /// @notice Get a specific tag
@@ -152,9 +158,9 @@ contract UrlContract {
     function getUserLikedURLs(address userAddress) public view returns (URL[] memory) {
         // get the actual likedURLs
         URL [] memory result = new URL[](users[userAddress].numberOfLikedURLs);
-        for (uint256 i = 0; i < urls.length; i++) {
+        for (uint256 i = 0; i < urls.list.length; i++) {
             if (users[userAddress].likedURLs[i] == true){
-                result[i] = urls[i];
+                result[i] = urls.list[i];
             }
         }
         return result;
@@ -166,7 +172,7 @@ contract UrlContract {
         uint256[] memory userSubmittedURLs = users[userAddress].submittedURLs;
         URL[] memory result = new URL[](userSubmittedURLs.length);
         for (uint256 i = 0; i < userSubmittedURLs.length; i++) {
-            result[i] = urls[userSubmittedURLs[i]];
+            result[i] = urls.list[userSubmittedURLs[i]];
         }
         return result;
     }
@@ -178,7 +184,7 @@ contract UrlContract {
         require(users[userAddress].likedURLs[index] == false, "URL already liked");
         users[userAddress].numberOfLikedURLs = users[userAddress].numberOfLikedURLs + 1;
         users[userAddress].likedURLs[index] = true;
-        urls[index].likes = urls[index].likes + 1;
+        urls.list[index].likes = urls.list[index].likes + 1;
     }
 
     /// @notice Unlike a specific URL
@@ -188,6 +194,6 @@ contract UrlContract {
         require(users[userAddress].likedURLs[index] == true, "URL already unliked");
         users[userAddress].numberOfLikedURLs = users[userAddress].numberOfLikedURLs - 1;
         users[userAddress].likedURLs[index] = false;
-        urls[index].likes = urls[index].likes - 1;
+        urls.list[index].likes = urls.list[index].likes - 1;
     }
 }
