@@ -39,6 +39,18 @@ contract Channel4Contract is Ownable {
     Tags private tags;
     mapping (address => User) private users;
 
+    /// @notice Initialize contract with one tag and one content
+    /// @dev Initialize with one element in each list to prevent the mapping of initial tag (0) to be confused as a empty value
+    /// @param title First content title
+    /// @param url First content link
+    /// @param tag First tag name
+    constructor (string memory title, string memory url, string memory tag) {
+        Tag memory firstTag = Tag(tag, msg.sender, new uint256[](0));
+        tags.list.push(firstTag);
+        Content memory firstContent = Content(title, url, msg.sender, 0, new uint256[](0));
+        contents.list.push(firstContent);
+    }
+
     /// Creation functions
 
     /// @notice Save URL in smart contract. Create tags if they don't exist
