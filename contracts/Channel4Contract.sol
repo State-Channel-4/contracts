@@ -39,6 +39,8 @@ contract Channel4Contract is Ownable {
     Tags private tags;
     mapping (address => User) private users;
 
+    /// Creation functions
+
     /// @notice Save URL in smart contract. Create tags if they don't exist
     /// @dev The function flow is: get url id, create tags (and save url id), save url
     /// @param title content title
@@ -52,7 +54,7 @@ contract Channel4Contract is Ownable {
         uint256[] memory tagIndexes = new uint256[](_tags.length);
         for (uint256 i = 0; i < _tags.length; i++) {
             tagIndexes[i] = createTagIfNotExists(_tags[i]);
-            addContentToTag(tagIndexes[i], contentIndex);
+            tags.list[tagIndexes[i]].contentIds.push(contentIndex);
         }
         Content memory newContent = Content(title, url, submittedBy, likes, tagIndexes);
         // check if content is the first one in the array
@@ -76,7 +78,7 @@ contract Channel4Contract is Ownable {
     }
 
     /// @notice Get a tag id from array or add a new tag if it doesn't exist
-    /// @dev It is used inside submitURL but it should be available to be called alone
+    /// @dev It is used inside createContentIfNotExists but it should be available to be called alone
     /// @param name Tag name
     function createTagIfNotExists(string memory name) public returns (uint256){
         // check if it is the first tag in the array
@@ -97,17 +99,100 @@ contract Channel4Contract is Ownable {
         return index;
     }
 
-    /// @notice Save content id in tag object so it is easily retrievable later
-    /// @dev It is an internal function used inside createContentIfNotExists
-    function addContentToTag(uint256 tagIndex, uint256 contentIndex) internal {
-        tags.list[tagIndex].contentIds.push(contentIndex);
-    }
-
-
     /// @notice Sync URLs state with the backend
     /// @dev It can be called only by the backend to sync the state of the URLs
     function syncState() public onlyOwner {
         // TODO: implement function
     }
 
+
+    /// Interaction functions
+
+    /// @notice Like a specific content
+    /// @param index Content id
+    function likeContent(uint256 index) public {
+        address userAddress = msg.sender;
+        require(users[userAddress].likedContent[index] == false, "Content already liked");
+        users[userAddress].numberOfLikedContent = users[userAddress].numberOfLikedContent + 1;
+        users[userAddress].likedContent[index] = true;
+        contents.list[index].likes = contents.list[index].likes + 1;
+    }
+
+    /// @notice Unlike a specific URL
+    /// @param index URL id
+    function unlikeContent(uint256 index) public {
+        address userAddress = msg.sender;
+        require(users[userAddress].likedContent[index] == true, "Content already unliked");
+        users[userAddress].numberOfLikedContent = users[userAddress].numberOfLikedContent - 1;
+        users[userAddress].likedContent[index] = false;
+        contents.list[index].likes = contents.list[index].likes - 1;
+    }
+
+
+    /// Reading functions
+
+    /// @notice Retrieve all contents associated with a specific tag name
+    /// @param name Tag name
+    function getContentByTag(string memory name) public view returns (Content[] memory) {
+        // check that the tag exists
+        uint256 index = tags.ids[name];
+        require(index != 0, "Tag not found");
+
+        uint256[] memory contentIds =  tags.list[index].contentIds;
+        uint256 length = contentIds.length;
+        Content[] memory result = new Content[](length);
+        for (uint256 i =0; i < length; i ++){
+            result[i] = contents.list[contentIds[i]];
+        }
+        return result;
+    }
+
+    /// @notice Retrieve all registered contents
+    function getAllContent() public view returns (Content[] memory) {
+        return contents.list;
+    }
+
+    /// @notice Retrieve all registered tags
+    function getAllTags() public view returns (Tag[] memory) {
+        return tags.list;
+    }
+
+    /// @notice Get a specific Content
+    /// @param index Content id
+    function getContent(uint256 index) public view returns (Content memory) {
+        require(index < contents.list.length, "Invalid URL index");
+        return contents.list[index];
+    }
+
+    /// @notice Get a specific tag
+    /// @param index Tag id
+    function getTag(uint256 index) public view returns (Tag memory) {
+        require(index < tags.list.length, "Invalid Tag index");
+        return tags.list[index];
+    }
+
+    /// @notice Retrieve all content submitted by a specific user
+    /// @param userAddress User id
+    function getUserSubmittedContent(address userAddress) public view returns (Content[] memory) {
+        uint256[] memory userSubmittedContent = users[userAddress].submittedContent;
+        uint256 length = userSubmittedContent.length;
+        Content[] memory result = new Content[](length);
+        for (uint256 i = 0; i < length; i++) {
+            result[i] = contents.list[userSubmittedContent[i]];
+        }
+        return result;
+    }
+
+    /// @notice Get all liked content of a specific user
+    /// @param userAddress User id
+    function getUserLikedContent(address userAddress) public view returns (Content[] memory) {
+        // get the actual likedURLs
+        Content [] memory result = new Content[](users[userAddress].numberOfLikedContent);
+        for (uint256 i = 0; i < contents.list.length; i++) {
+            if (users[userAddress].likedContent[i] == true){
+                result[i] = contents.list[i];
+            }
+        }
+        return result;
+    }
 }
