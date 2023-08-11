@@ -1,0 +1,42 @@
+import { ethers } from "hardhat";
+import { firstTag, firstTitle, firstUrl } from "../constants";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+
+
+// We define a fixture to reuse the same setup in every test.
+// We use loadFixture to run this setup once, snapshot that state,
+// and reset Hardhat Network to that snapshot in every test.
+export async function deployContractFixture(){
+    // Contracts are deployed using the first signer/account by default
+    const [owner, otherAccount1, otherAccount2] = await ethers.getSigners();
+
+    const Channel4Contract = await ethers.getContractFactory("Channel4Contract");
+    const channel4Contract = await Channel4Contract.deploy(firstTitle, firstUrl, firstTag);
+
+    return { channel4Contract, owner, otherAccount1, otherAccount2 };
+}
+
+export async function createContentIfNotExistsFixture(){
+    const { channel4Contract, owner, otherAccount1, otherAccount2 } = await loadFixture(deployContractFixture);
+    const urlObj = {
+        title: "Google",
+        url: "https://www.google.com/",
+        submittedBy: otherAccount1.address,
+        likes: 0,
+        tags: [firstTag, "web search"],
+    };
+    await channel4Contract.connect(otherAccount1).createContentIfNotExists(
+        urlObj.title,
+        urlObj.url,
+        urlObj.submittedBy,
+        urlObj.likes,
+        urlObj.tags,
+    );
+    return { channel4Contract, owner, otherAccount1, otherAccount2, urlObj };
+}
+
+export async function likeURLFixture(){
+    const { channel4Contract, owner, otherAccount1, otherAccount2, urlObj } = await loadFixture(createContentIfNotExistsFixture);
+    await channel4Contract.connect(otherAccount1).likeContent(0);
+    return { channel4Contract, owner, otherAccount1, otherAccount2, urlObj };
+}
