@@ -47,8 +47,10 @@ contract Channel4Contract is Ownable {
     constructor (string memory title, string memory url, string memory tag) {
         Tag memory firstTag = Tag(tag, msg.sender, new uint256[](0));
         tags.list.push(firstTag);
+        tags.list[0].contentIds.push(0);
         Content memory firstContent = Content(title, url, msg.sender, 0, new uint256[](0));
         contents.list.push(firstContent);
+        contents.list[0].tagIds.push(0);
     }
 
     /// Creation functions
@@ -60,12 +62,13 @@ contract Channel4Contract is Ownable {
     /// @param _tags Tag names list associated with that content
     function createContentIfNotExists(string memory title, string memory url, address submittedBy, uint256 likes, string[] calldata _tags) public returns (uint256) {
         require(bytes(title).length > 0 && bytes(url).length > 0 && _tags.length > 0, "Invalid input");
+        // TODO: duplicate function: one for onlyOwner and another for anyone that checks submittedBy is msg.sender
         // If tx fails then changes rollback. We can be sure content index in the beginning = content index in the end
         uint256 contentIndex = contents.list.length;
         // get tag indexes or create new tags. Also add content index to each tag
         uint256[] memory tagIndexes = new uint256[](_tags.length);
         for (uint256 i = 0; i < _tags.length; i++) {
-            tagIndexes[i] = createTagIfNotExists(_tags[i]);
+            tagIndexes[i] = createTagIfNotExists(_tags[i], submittedBy);
             tags.list[tagIndexes[i]].contentIds.push(contentIndex);
         }
         Content memory newContent = Content(title, url, submittedBy, likes, tagIndexes);
@@ -84,7 +87,7 @@ contract Channel4Contract is Ownable {
             return contentIndex;
         } else {
             // update content
-            contents.list[index] = newContent; // TODO: if we do it in parts can we save gas?
+            contents.list[index] = newContent; // TODO: if we do it in parts/bulk can we save gas?
             return index;
         }
     }
@@ -92,7 +95,7 @@ contract Channel4Contract is Ownable {
     /// @notice Get a tag id from array or add a new tag if it doesn't exist
     /// @dev It is used inside createContentIfNotExists but it should be available to be called alone
     /// @param name Tag name
-    function createTagIfNotExists(string memory name) public returns (uint256){
+    function createTagIfNotExists(string memory name, address submittedBy) public returns (uint256){
         // check if it is the first tag in the array
         string memory firstTagName = tags.list[0].name;
         if (keccak256(bytes(name)) == keccak256(bytes(firstTagName))){
@@ -102,7 +105,7 @@ contract Channel4Contract is Ownable {
         uint256 index = tags.ids[name];
         if (index == 0){
             // add new tag to array
-            Tag memory newTag = Tag(name, msg.sender, new uint256[](0));
+            Tag memory newTag = Tag(name, submittedBy, new uint256[](0));
             tags.list.push(newTag);
             uint256 newIndex = tags.list.length - 1;
             tags.ids[name] = newIndex;
