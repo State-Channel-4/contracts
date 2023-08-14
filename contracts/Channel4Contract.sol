@@ -60,9 +60,14 @@ contract Channel4Contract is Ownable {
     /// @param title content title
     /// @param url content link. It works as an id as well because it is unique
     /// @param _tags Tag names list associated with that content
-    function createContentIfNotExists(string memory title, string memory url, address submittedBy, uint256 likes, string[] calldata _tags) public returns (uint256) {
+    function createContentIfNotExists(
+        string memory title,
+        string memory url,
+        address submittedBy,
+        uint256 likes,
+        string[] calldata _tags
+    ) public onlyOwner returns (uint256) {
         require(bytes(title).length > 0 && bytes(url).length > 0 && _tags.length > 0, "Invalid input");
-        // TODO: duplicate function: one for onlyOwner and another for anyone that checks submittedBy is msg.sender
         // If tx fails then changes rollback. We can be sure content index in the beginning = content index in the end
         uint256 contentIndex = contents.list.length;
         // get tag indexes or create new tags. Also add content index to each tag
@@ -95,7 +100,11 @@ contract Channel4Contract is Ownable {
     /// @notice Get a tag id from array or add a new tag if it doesn't exist
     /// @dev It is used inside createContentIfNotExists but it should be available to be called alone
     /// @param name Tag name
-    function createTagIfNotExists(string memory name, address submittedBy) public returns (uint256){
+    /// @param submittedBy user that submitted the tag
+    function createTagIfNotExists(
+        string memory name,
+        address submittedBy
+    ) public onlyOwner returns (uint256){
         // check if it is the first tag in the array
         string memory firstTagName = tags.list[0].name;
         if (keccak256(bytes(name)) == keccak256(bytes(firstTagName))){
@@ -125,8 +134,8 @@ contract Channel4Contract is Ownable {
 
     /// @notice Like a specific content
     /// @param index Content id
-    function likeContent(uint256 index) public {
-        address userAddress = msg.sender;
+    function likeContent(uint256 index, address submittedBy) public onlyOwner {
+        address userAddress = submittedBy;
         require(users[userAddress].likedContent[index] == false, "Content already liked");
         users[userAddress].numberOfLikedContent = users[userAddress].numberOfLikedContent + 1;
         users[userAddress].likedContent[index] = true;
@@ -135,8 +144,8 @@ contract Channel4Contract is Ownable {
 
     /// @notice Unlike a specific URL
     /// @param index URL id
-    function unlikeContent(uint256 index) public {
-        address userAddress = msg.sender;
+    function unlikeContent(uint256 index, address submittedBy) public onlyOwner {
+        address userAddress = submittedBy;
         require(users[userAddress].likedContent[index] == true, "Content already unliked");
         users[userAddress].numberOfLikedContent = users[userAddress].numberOfLikedContent - 1;
         users[userAddress].likedContent[index] = false;
