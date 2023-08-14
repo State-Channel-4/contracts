@@ -133,9 +133,11 @@ contract Channel4Contract is Ownable {
     /// Interaction functions
 
     /// @notice Like a specific content
-    /// @param index Content id
-    function likeContent(uint256 index, address submittedBy) public onlyOwner {
+    /// @param url content url (works as an id)
+    /// @param submittedBy user that submitted the content
+    function likeContent(string memory url, address submittedBy) public onlyOwner {
         address userAddress = submittedBy;
+        uint256 index = contents.ids[url];
         require(users[userAddress].likedContent[index] == false, "Content already liked");
         users[userAddress].numberOfLikedContent = users[userAddress].numberOfLikedContent + 1;
         users[userAddress].likedContent[index] = true;
@@ -143,9 +145,11 @@ contract Channel4Contract is Ownable {
     }
 
     /// @notice Unlike a specific URL
-    /// @param index URL id
-    function unlikeContent(uint256 index, address submittedBy) public onlyOwner {
+    /// @param url content url (works as an id)
+    /// @param submittedBy user that submitted the content
+    function unlikeContent(string memory url, address submittedBy) public onlyOwner {
         address userAddress = submittedBy;
+        uint256 index = contents.ids[url];
         require(users[userAddress].likedContent[index] == true, "Content already unliked");
         users[userAddress].numberOfLikedContent = users[userAddress].numberOfLikedContent - 1;
         users[userAddress].likedContent[index] = false;

@@ -52,13 +52,18 @@ describe("Deploy", function () {
     it("Should block interaction functions from non-owner", async function () {
       const { channel4Contract, otherAccount1 } = await loadFixture(deployContractFixture);
 
-      // TODO: like content should not use index but url
-      /*await expect(
-        channel4Contract.connect(otherAccount1).likeContent()
+      await expect(
+        channel4Contract.connect(otherAccount1).likeContent(
+          firstUrl,
+          otherAccount1.address
+        )
       ).to.be.revertedWith("Ownable: caller is not the owner");
 
       await expect(
-        channel4Contract.connect(otherAccount1).unlikeContent()
-      ).to.be.revertedWith("Ownable: caller is not the owner");*/
+        channel4Contract.connect(otherAccount1).unlikeContent(
+          firstUrl,
+          otherAccount1.address
+        )
+      ).to.be.revertedWith("Ownable: caller is not the owner");
     });
   });
