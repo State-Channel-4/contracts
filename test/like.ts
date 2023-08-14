@@ -9,9 +9,9 @@ describe("Like", async function () {
       const url = await channel4Contract.getContent(0);
       expect( Number(url.likes) ).to.equal(1);
 
-      const userLikedURLs = await channel4Contract.getUserLikedContent(otherAccount1.address);
-      expect( userLikedURLs.length ).to.equal(1);
-      expect ( Number(userLikedURLs[0].likes) ).to.equal(1);
+      const userLikedContents = await channel4Contract.getUserLikedContent(otherAccount1.address);
+      expect( userLikedContents.length ).to.equal(1);
+      expect ( Number(userLikedContents[0].likes) ).to.equal(1);
 
     });
 });
