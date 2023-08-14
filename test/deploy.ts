@@ -15,10 +15,10 @@ describe("Deploy", function () {
       expect( firstTagObject.contentIds.length).to.equal(0);
     });
 
-    /*it("Should have no elements in urls array", async function () {
-      const { urlContract } = await loadFixture(deployUrlContractFixture);
-      const allUrls = await urlContract.getAllURLs();
+    it("Should have no elements in content array", async function () {
+      const { channel4Contract } = await loadFixture(deployContractFixture);
+      const AllContent = await channel4Contract.getAllContent();
 
-      expect( allUrls.length ).to.equal(0);
-    });*/
+      expect( Number(AllContent.length) ).to.equal(1);
+    });
   });

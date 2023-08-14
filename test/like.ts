@@ -1,10 +1,10 @@
 import { expect } from "chai";
-import { likeURLFixture } from "./fixtures";
+import { likeContentFixture } from "./fixtures";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 describe("Like", async function () {
-    it("Should successfully like a URL", async function () {
-      const { channel4Contract, otherAccount1 } = await loadFixture(likeURLFixture);
+    it("Should successfully like a Content", async function () {
+      const { channel4Contract, otherAccount1 } = await loadFixture(likeContentFixture);
 
       const content = await channel4Contract.getContent(0);
       expect( Number(content.likes) ).to.equal(1);

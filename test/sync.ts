@@ -3,7 +3,7 @@ import { deployContractFixture } from "./fixtures";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 describe("Sync", async function () {
-    it("Should succesfully load a bunch of urls to the contract state", async function () {
+    it("Should succesfully load a bunch of content to the contract state", async function () {
       const { channel4Contract, owner, otherAccount1 } = await loadFixture(deployContractFixture);
 
       await expect(

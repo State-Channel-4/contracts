@@ -19,7 +19,7 @@ describe("Create", async function () {
       expect( contentIdsInFirstTag[0] ).to.equal(allContent.length); // check for content ids
     });
 
-    it("Should have the correct URL object attributes", async function () {
+    it("Should have the correct Content object attributes", async function () {
       const { channel4Contract, otherAccount1, contentObj } = await loadFixture(createContentIfNotExistsFixture);
 
       const allContent = await channel4Contract.getAllContent();
