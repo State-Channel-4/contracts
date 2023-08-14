@@ -18,7 +18,7 @@ export async function deployContractFixture(){
 
 export async function createContentIfNotExistsFixture(){
     const { channel4Contract, owner, otherAccount1, otherAccount2 } = await loadFixture(deployContractFixture);
-    const urlObj = {
+    const contentObj = {
         title: "Google",
         url: "https://www.google.com/",
         submittedBy: otherAccount1.address,
@@ -26,17 +26,17 @@ export async function createContentIfNotExistsFixture(){
         tags: [firstTag, "web search"],
     };
     await channel4Contract.connect(otherAccount1).createContentIfNotExists(
-        urlObj.title,
-        urlObj.url,
-        urlObj.submittedBy,
-        urlObj.likes,
-        urlObj.tags,
+        contentObj.title,
+        contentObj.url,
+        contentObj.submittedBy,
+        contentObj.likes,
+        contentObj.tags,
     );
-    return { channel4Contract, owner, otherAccount1, otherAccount2, urlObj };
+    return { channel4Contract, owner, otherAccount1, otherAccount2, contentObj };
 }
 
 export async function likeURLFixture(){
-    const { channel4Contract, owner, otherAccount1, otherAccount2, urlObj } = await loadFixture(createContentIfNotExistsFixture);
+    const { channel4Contract, owner, otherAccount1, otherAccount2, contentObj } = await loadFixture(createContentIfNotExistsFixture);
     await channel4Contract.connect(otherAccount1).likeContent(0);
-    return { channel4Contract, owner, otherAccount1, otherAccount2, urlObj };
+    return { channel4Contract, owner, otherAccount1, otherAccount2, contentObj };
 }
