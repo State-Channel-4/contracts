@@ -53,6 +53,11 @@ describe("Deploy", function () {
           otherAccount1.address,
         )
       ).to.be.revertedWith("Ownable: caller is not the owner");
+
+      await expect(
+        channel4Contract.connect(otherAccount1).syncState(
+        )
+      ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
     it("Should block interaction functions from non-owner", async function () {
