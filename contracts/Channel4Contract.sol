@@ -186,15 +186,17 @@ contract Channel4Contract is Ownable {
     }
 
     /// @notice Get a specific Content
-    /// @param index Content id
-    function getContent(uint256 index) public view returns (Content memory) {
+    /// @param url Content url (works as an id)
+    function getContent(string memory url) public view returns (Content memory) {
+        uint256 index = contents.ids[url];
         require(index < contents.list.length, "Invalid URL index");
         return contents.list[index];
     }
 
     /// @notice Get a specific tag
-    /// @param index Tag id
-    function getTag(uint256 index) public view returns (Tag memory) {
+    /// @param name tag name
+    function getTag(string memory name) public view returns (Tag memory) {
+        uint256 index = tags.ids[name];
         require(index < tags.list.length, "Invalid Tag index");
         return tags.list[index];
     }
