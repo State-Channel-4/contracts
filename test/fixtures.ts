@@ -37,6 +37,9 @@ export async function createContentIfNotExistsFixture(){
 
 export async function likeContentFixture(){
     const { channel4Contract, owner, otherAccount1, otherAccount2, contentObj } = await loadFixture(createContentIfNotExistsFixture);
-    await channel4Contract.connect(otherAccount1).likeContent(0);
+    await channel4Contract.likeContent(
+        contentObj.url,
+        otherAccount1.address,
+    );
     return { channel4Contract, owner, otherAccount1, otherAccount2, contentObj };
 }
