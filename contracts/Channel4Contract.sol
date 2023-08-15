@@ -273,10 +273,12 @@ contract Channel4Contract is Ownable {
     /// @param userAddress User id
     function getUserLikedContent(address userAddress) public view returns (Content[] memory) {
         uint256 userIndex = users.ids[userAddress];
+        uint256 resultIndex = 0;
         Content [] memory result = new Content[](users.list[userIndex].numberOfLikedContent);
         for (uint256 i = 0; i < contents.list.length; i++) {
             if (users.likedContent[userAddress][i] == true){
-                result[i] = contents.list[i];
+                result[resultIndex] = contents.list[i];
+                resultIndex++;
             }
         }
         return result;
