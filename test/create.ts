@@ -6,7 +6,7 @@ import { firstTag, secondTag } from "../constants";
 
 describe("Create", async function () {
     it("Should successfully submit Content", async function () {
-      const { channel4Contract, contentObj } = await loadFixture(createContentIfNotExistsFixture);
+      const { channel4Contract, contentObj, owner, otherAccount1 } = await loadFixture(createContentIfNotExistsFixture);
 
       const allContent = await channel4Contract.getAllContent();
       const allTags = await channel4Contract.getAllTags();
@@ -24,35 +24,18 @@ describe("Create", async function () {
 
       content.tagIds.forEach( (tag) => {
         const tagObj = allTags[Number(tag)];
-        console.log(tagObj)
         expect([firstTag, secondTag]).to.include(tagObj.name);
-        //expect( tagObj.contentIds.length ).to.equal(1);
+        expect([owner.address, otherAccount1.address]).to.include(tagObj.createdBy);
+        expect( tagObj.contentIds.length ).to.greaterThanOrEqual(0);
+        expect( tagObj.contentIds.length ).to.lessThanOrEqual(2);
       });
     });
 
-    /*
-    it("Should have the correct Content object attributes", async function () {
-      const { channel4Contract, otherAccount1, contentObj } = await loadFixture(createContentIfNotExistsFixture);
-
-      const allContent = await channel4Contract.getAllContent();
-      const firstContentObject = allContent[0];
-
-      expect( firstContentObject.title ).to.equal(contentObj.title);
-      expect( firstContentObject.url ).to.equal(contentObj.url);
-      expect( firstContentObject.submittedBy ).to.equal(otherAccount1.address);
-      expect( firstContentObject.tagIds.length ).to.equal(contentObj.tags.length);
-      // check tag ids are correct
-      for (let i = 0, ni = contentObj.tags.length; i<ni; i++){
-        expect( Number(firstContentObject.tagIds[i]) ).to.equal(i);
-      }
-    });
-
     it("Should not add new tags if they already exist", async function () {
-      const { channel4Contract, contentObj } = await loadFixture(createContentIfNotExistsFixture);
-
+      const { channel4Contract, contentObj, owner } = await loadFixture(createContentIfNotExistsFixture);
+      await channel4Contract.createTagIfNotExists(firstTag, owner.address);
       const allTags = await channel4Contract.getAllTags();
       expect( allTags.length ).to.equal(contentObj.tags.length);
     });
-    */
 
   });

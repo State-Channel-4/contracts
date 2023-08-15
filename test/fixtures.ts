@@ -25,7 +25,7 @@ export async function createContentIfNotExistsFixture(){
         likes: 0,
         tags: [firstTag, secondTag],
     };
-    await channel4Contract.connect(otherAccount1).createContentIfNotExists(
+    await channel4Contract.createContentIfNotExists(
         contentObj.title,
         contentObj.url,
         contentObj.submittedBy,
