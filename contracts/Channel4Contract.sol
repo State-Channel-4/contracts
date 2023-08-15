@@ -20,7 +20,7 @@ contract Channel4Contract is Ownable {
     }
 
     struct User {
-        mapping (uint256 => bool) likedContent;
+        address userAddress;
         uint256 numberOfLikedContent;
         uint256[] submittedContent;
     }
@@ -35,9 +35,15 @@ contract Channel4Contract is Ownable {
         mapping (string => uint256) ids;
     }
 
+    struct Users {
+        User[] list;
+        mapping (address => uint256) ids;
+        mapping (address => mapping (uint256 => bool)) likedContent;
+    }
+
     Contents private contents;
     Tags private tags;
-    mapping (address => User) private users;
+    Users private users;
 
     /// @notice Initialize contract with one tag and one content
     /// @dev Initialize with one element in each list to prevent the mapping of initial tag (0) to be confused as a empty value
@@ -45,12 +51,20 @@ contract Channel4Contract is Ownable {
     /// @param url First content link
     /// @param tag First tag name
     constructor (string memory title, string memory url, string memory tag) {
-        Tag memory firstTag = Tag(tag, msg.sender, new uint256[](0));
+        address msgSender = msg.sender;
+
+        Tag memory firstTag = Tag(tag, msgSender, new uint256[](0));
         tags.list.push(firstTag);
         tags.list[0].contentIds.push(0);
-        Content memory firstContent = Content(title, url, msg.sender, 0, new uint256[](0));
+
+        Content memory firstContent = Content(title, url, msgSender, 0, new uint256[](0));
         contents.list.push(firstContent);
         contents.list[0].tagIds.push(0);
+
+        User memory newUser = User(msgSender, 0, new uint256[](0));
+        users.list.push(newUser);
+        users.list[0].submittedContent.push(0);
+        users.ids[msgSender] = 0;
     }
 
     /// Creation functions
@@ -68,6 +82,7 @@ contract Channel4Contract is Ownable {
         string[] calldata _tags
     ) public onlyOwner returns (uint256) {
         require(bytes(title).length > 0 && bytes(url).length > 0 && _tags.length > 0, "Invalid input");
+        uint256 userIndex = createUserIfNotExists(submittedBy);
         // If tx fails then changes rollback. We can be sure content index in the beginning = content index in the end
         uint256 contentIndex = contents.list.length;
         // get tag indexes or create new tags. Also add content index to each tag
@@ -89,6 +104,8 @@ contract Channel4Contract is Ownable {
             // add new content to array
             contents.list.push(newContent);
             contents.ids[url] = contentIndex;
+            // add new content to user submitted content
+            users.list[userIndex].submittedContent.push(contentIndex);
             return contentIndex;
         } else {
             // update content
@@ -123,6 +140,25 @@ contract Channel4Contract is Ownable {
         return index;
     }
 
+    /// @notice Get a user id from array or add a new user if it doesn't exist
+    /// @dev It is used inside createContentIfNotExists but it should be available to be called alone
+    /// @param userAddress User address
+    function createUserIfNotExists(
+        address userAddress
+    ) public onlyOwner returns (uint256){
+        // check if user is already registered
+        uint256 index = users.ids[userAddress];
+        if (index == 0){
+            // add new user to array
+            User memory newUser = User(userAddress, 0, new uint256[](0));
+            users.list.push(newUser);
+            uint256 newIndex = users.list.length - 1;
+            users.ids[userAddress] = newIndex;
+            return newIndex;
+        }
+        return index;
+    }
+
     /// @notice Sync URLs state with the backend
     /// @dev It can be called only by the backend to sync the state of the URLs
     function syncState() public onlyOwner {
@@ -136,24 +172,30 @@ contract Channel4Contract is Ownable {
     /// @param url content url (works as an id)
     /// @param submittedBy user that submitted the content
     function likeContent(string memory url, address submittedBy) public onlyOwner {
+        uint256 indexContent = contents.ids[url];
         address userAddress = submittedBy;
-        uint256 index = contents.ids[url];
-        require(users[userAddress].likedContent[index] == false, "Content already liked");
-        users[userAddress].numberOfLikedContent = users[userAddress].numberOfLikedContent + 1;
-        users[userAddress].likedContent[index] = true;
-        contents.list[index].likes = contents.list[index].likes + 1;
+        uint256 userIndex = users.ids[userAddress];
+        User storage user = users.list[userIndex];
+
+        require(users.likedContent[userAddress][indexContent] == false, "Content already liked");
+        user.numberOfLikedContent = user.numberOfLikedContent + 1;
+        users.likedContent[userAddress][indexContent] = true;
+        contents.list[indexContent].likes = contents.list[indexContent].likes + 1;
     }
 
     /// @notice Unlike a specific URL
     /// @param url content url (works as an id)
     /// @param submittedBy user that submitted the content
     function unlikeContent(string memory url, address submittedBy) public onlyOwner {
+        uint256 indexContent = contents.ids[url];
         address userAddress = submittedBy;
-        uint256 index = contents.ids[url];
-        require(users[userAddress].likedContent[index] == true, "Content already unliked");
-        users[userAddress].numberOfLikedContent = users[userAddress].numberOfLikedContent - 1;
-        users[userAddress].likedContent[index] = false;
-        contents.list[index].likes = contents.list[index].likes - 1;
+        uint256 userIndex = users.ids[userAddress];
+        User storage user = users.list[userIndex];
+
+        require(users.likedContent[userAddress][indexContent] == true, "Content already unliked");
+        user.numberOfLikedContent = user.numberOfLikedContent - 1;
+        users.likedContent[userAddress][indexContent] = false;
+        contents.list[indexContent].likes = contents.list[indexContent].likes - 1;
     }
 
 
@@ -185,11 +227,16 @@ contract Channel4Contract is Ownable {
         return tags.list;
     }
 
+    /// @notice Retrieve all registered users
+    function getAllUsers() public view returns (User[] memory) {
+        return users.list;
+    }
+
     /// @notice Get a specific Content
     /// @param url Content url (works as an id)
     function getContent(string memory url) public view returns (Content memory) {
         uint256 index = contents.ids[url];
-        require(index < contents.list.length, "Invalid URL index");
+        require(index < contents.list.length, "Invalid Content index");
         return contents.list[index];
     }
 
@@ -201,10 +248,19 @@ contract Channel4Contract is Ownable {
         return tags.list[index];
     }
 
+    /// @notice Get a specific user
+    /// @param userAddress user address
+    function getUser(address userAddress) public view returns (User memory) {
+        uint256 index = users.ids[userAddress];
+        require(index < tags.list.length, "Invalid User index");
+        return users.list[index];
+    }
+
     /// @notice Retrieve all content submitted by a specific user
     /// @param userAddress User id
     function getUserSubmittedContent(address userAddress) public view returns (Content[] memory) {
-        uint256[] memory userSubmittedContent = users[userAddress].submittedContent;
+        uint256 userIndex = users.ids[userAddress];
+        uint256[] memory userSubmittedContent = users.list[userIndex].submittedContent;
         uint256 length = userSubmittedContent.length;
         Content[] memory result = new Content[](length);
         for (uint256 i = 0; i < length; i++) {
@@ -216,10 +272,10 @@ contract Channel4Contract is Ownable {
     /// @notice Get all liked content of a specific user
     /// @param userAddress User id
     function getUserLikedContent(address userAddress) public view returns (Content[] memory) {
-        // get the actual likedURLs
-        Content [] memory result = new Content[](users[userAddress].numberOfLikedContent);
+        uint256 userIndex = users.ids[userAddress];
+        Content [] memory result = new Content[](users.list[userIndex].numberOfLikedContent);
         for (uint256 i = 0; i < contents.list.length; i++) {
-            if (users[userAddress].likedContent[i] == true){
+            if (users.likedContent[userAddress][i] == true){
                 result[i] = contents.list[i];
             }
         }

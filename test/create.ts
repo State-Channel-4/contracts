@@ -6,26 +6,38 @@ import { firstTag, secondTag } from "../constants";
 
 describe("Create", async function () {
     it("Should successfully submit Content", async function () {
-      const { channel4Contract, contentObj, owner, otherAccount1 } = await loadFixture(createContentIfNotExistsFixture);
+      const { channel4Contract, contentObj, owner, otherAccount1, otherAccount2 } = await loadFixture(createContentIfNotExistsFixture);
 
       const allContent = await channel4Contract.getAllContent();
       const allTags = await channel4Contract.getAllTags();
+      const allUsers = await channel4Contract.getAllUsers();
+
 
       expect( allContent.length ).to.equal(2); // remember that a content is added in deploy and other in create
       expect( allTags.length ).to.equal(contentObj.tags.length); // remember that firstTag is included in content.tags
 
+      // check the content object
       const content = await channel4Contract.getContent(contentObj.url);
-
       expect( content.title ).to.equal(contentObj.title);
       expect( content.url ).to.equal(contentObj.url);
       expect( content.submittedBy ).to.equal(contentObj.submittedBy);
       expect( Number(content.likes) ).to.equal(0);
       expect( content.tagIds.length ).to.equal(contentObj.tags.length);
 
+      // check the users list
+      allUsers.forEach( (user) => {
+        expect([owner.address, otherAccount1.address, otherAccount2.address]).to.include(user.userAddress);
+        expect( Number(user.numberOfLikedContent) ).to.equal(0);
+        expect( user.submittedContent.length ).to.greaterThanOrEqual(0);
+        expect( user.submittedContent.length ).to.lessThanOrEqual(2);
+        expect( user.submittedContent ).to.contain.oneOf([BigInt(0), BigInt(1)]);
+      });
+
+      // check the tags list
       content.tagIds.forEach( (tag) => {
         const tagObj = allTags[Number(tag)];
         expect([firstTag, secondTag]).to.include(tagObj.name);
-        expect([owner.address, otherAccount1.address]).to.include(tagObj.createdBy);
+        expect([owner.address, otherAccount1.address, otherAccount2.address]).to.include(tagObj.createdBy);
         expect( tagObj.contentIds.length ).to.greaterThanOrEqual(0);
         expect( tagObj.contentIds.length ).to.lessThanOrEqual(2);
       });
