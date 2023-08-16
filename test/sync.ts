@@ -6,13 +6,16 @@ import { contentToAdd, tagsToAdd, usersToAdd } from "../constants";
 describe("Sync", async function () {
   it("Should succesfully load a bunch of content to the contract state", async function () {
       const { channel4Contract } = await loadFixture(deployContractFixture);
+      await channel4Contract.syncState(
+        usersToAdd,
+        tagsToAdd,
+        contentToAdd
+      );
 
-      await expect(
-        channel4Contract.syncState(
-          usersToAdd,
-          tagsToAdd,
-          contentToAdd
-        )
-      ).not.to.be.revertedWith("Ownable: caller is not the owner");
+      const allContent = await channel4Contract.getAllContent();
+      console.log(allContent);
+
+      // TODO: how to measure success?
+
     });
 });
