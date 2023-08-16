@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { createContentIfNotExistsFixture } from "./fixtures";
+import { createContentIfNotExistsFixture, deployContractFixture } from "./fixtures";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { firstTag, secondTag } from "../constants";
 
@@ -15,7 +15,7 @@ describe("Create", async function () {
 
       expect( allContent.length ).to.equal(2); // remember that a content is added in deploy and other in create
       expect( allTags.length ).to.equal(contentObj.tags.length); // remember that firstTag is included in content.tags
-      expect( allUsers.length ).to.equal(2); // remember that owner is included in deploy and other in create
+      expect( allUsers.length ).to.equal(2); // remember that owner is included in deploy
     });
 
     it("Should have the corrent content object", async function () {
@@ -63,4 +63,17 @@ describe("Create", async function () {
       expect( allTags.length ).to.equal(contentObj.tags.length);
     });
 
+    it("Should add new user if it doesn't exist", async function () {
+      const { channel4Contract, otherAccount1 } = await loadFixture(deployContractFixture);
+      await channel4Contract.createUserIfNotExists(otherAccount1.address);
+      const allUsers = await channel4Contract.getAllUsers();
+      expect( allUsers.length ).to.equal(2);
+    });
+
+    it("Should not add user if it exists", async function () {
+      const { channel4Contract, owner } = await loadFixture(deployContractFixture);
+      await channel4Contract.createUserIfNotExists(owner.address);
+      const allUsers = await channel4Contract.getAllUsers();
+      expect( allUsers.length ).to.equal(1);
+    });
   });

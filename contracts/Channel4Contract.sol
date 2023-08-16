@@ -25,6 +25,14 @@ contract Channel4Contract is Ownable {
         uint256[] submittedContent;
     }
 
+    struct ContentToAdd {
+        string title;
+        string url;
+        address submittedBy;
+        uint256 likes;
+        string[] tagIds;
+    }
+
     struct Contents {
         Content[] list;
         mapping (string => uint256) ids;
@@ -146,6 +154,11 @@ contract Channel4Contract is Ownable {
     function createUserIfNotExists(
         address userAddress
     ) public onlyOwner returns (uint256){
+        // check if content is the first one in the array
+        address firstUserAddress = users.list[0].userAddress;
+        if (userAddress == firstUserAddress){
+            return 0;
+        }
         // check if user is already registered
         uint256 index = users.ids[userAddress];
         if (index == 0){
@@ -159,10 +172,35 @@ contract Channel4Contract is Ownable {
         return index;
     }
 
-    /// @notice Sync URLs state with the backend
+    /// @notice Sync Content state with the backend. Only Content, Tag and User elements that have been updated
     /// @dev It can be called only by the backend to sync the state of the URLs
-    function syncState() public onlyOwner {
-        // TODO: implement function
+    function syncState(
+        User[] calldata usersToAdd/*,
+        Tag[] calldata tagsToAdd,
+        ContentToAdd[] calldata contentsToAdd*/
+    ) public onlyOwner {
+        for (uint256 i = 0; i < usersToAdd.length; i++) {
+            uint256 userIndex = createUserIfNotExists(
+                usersToAdd[i].userAddress
+            );
+            users.list[userIndex].numberOfLikedContent = usersToAdd[i].numberOfLikedContent;
+            users.list[userIndex].submittedContent = usersToAdd[i].submittedContent;
+        }/*
+        for (uint256 i = 0; i < tagsToAdd.length; i++) {
+            createTagIfNotExists(
+                tagsToAdd[i].name,
+                tagsToAdd[i].createdBy
+            );
+        }
+        for (uint256 i = 0; i < contentsToAdd.length; i++) {
+            createContentIfNotExists(
+                contentsToAdd[i].title,
+                contentsToAdd[i].url,
+                contentsToAdd[i].submittedBy,
+                contentsToAdd[i].likes,
+                contentsToAdd[i].tagIds
+            );
+        }*/
     }
 
 
