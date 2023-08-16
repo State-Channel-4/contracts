@@ -1,6 +1,6 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { firstTag, firstTitle, firstUrl } from "../constants";
+import { contentToAdd, firstTag, firstTitle, firstUrl, tagsToAdd, usersToAdd } from "../constants";
 import { deployContractFixture } from "./fixtures";
 
 describe("Deploy", function () {
@@ -56,6 +56,9 @@ describe("Deploy", function () {
 
       await expect(
         channel4Contract.connect(otherAccount1).syncState(
+          usersToAdd,
+          tagsToAdd,
+          contentToAdd
         )
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });

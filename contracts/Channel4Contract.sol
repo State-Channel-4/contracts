@@ -33,6 +33,18 @@ contract Channel4Contract is Ownable {
         string[] tagIds;
     }
 
+    struct TagToAdd {
+        string name;
+        address createdBy;
+        string[] contentIds;
+    }
+
+    struct UserToAdd {
+        address userAddress;
+        uint256 numberOfLikedContent;
+        string[] submittedContent;
+    }
+
     struct Contents {
         Content[] list;
         mapping (string => uint256) ids;
@@ -175,9 +187,9 @@ contract Channel4Contract is Ownable {
     /// @notice Sync Content state with the backend. Only Content, Tag and User elements that have been updated
     /// @dev It can be called only by the backend to sync the state of the URLs
     function syncState(
-        User[] calldata usersToAdd/*,
-        Tag[] calldata tagsToAdd,
-        ContentToAdd[] calldata contentsToAdd*/
+        User[] calldata usersToAdd,
+        TagToAdd[] calldata tagsToAdd,
+        ContentToAdd[] calldata contentsToAdd
     ) public onlyOwner {
         for (uint256 i = 0; i < usersToAdd.length; i++) {
             uint256 userIndex = createUserIfNotExists(
@@ -185,7 +197,7 @@ contract Channel4Contract is Ownable {
             );
             users.list[userIndex].numberOfLikedContent = usersToAdd[i].numberOfLikedContent;
             users.list[userIndex].submittedContent = usersToAdd[i].submittedContent;
-        }/*
+        }
         for (uint256 i = 0; i < tagsToAdd.length; i++) {
             createTagIfNotExists(
                 tagsToAdd[i].name,
@@ -200,7 +212,7 @@ contract Channel4Contract is Ownable {
                 contentsToAdd[i].likes,
                 contentsToAdd[i].tagIds
             );
-        }*/
+        }
     }
 
 
