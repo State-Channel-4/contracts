@@ -18,8 +18,6 @@ describe("Litigate", async function () {
 
         const allContent = await channel4Contract.getAllContent();
         console.log(allContent);
-
-        console.log(result);
         // TODO: setup expects
     });
 
@@ -34,7 +32,6 @@ describe("Litigate", async function () {
         };
         const EIPSignature = await backendWallet.signTypedData(domain, types, content);
         const result = await channel4Contract.litigateContent(content, EIPSignature);
-        console.log(result);
         // TODO: setup expects
     });
 });
