@@ -14,11 +14,26 @@ describe("Litigate", async function () {
             tagIds: ['superhero'],
         };
         const EIPSignature = await backendWallet.signTypedData(domain, types, content);
-        const result = await channel4Contract.litigateContent(content, EIPSignature);
 
-        const allContent = await channel4Contract.getAllContent();
-        console.log(allContent);
-        // TODO: setup expects
+        const allContentBefore = await channel4Contract.getAllContent();
+        await channel4Contract.litigateContent(content, EIPSignature);
+        const allContentAfter = await channel4Contract.getAllContent();
+        const allTags = await channel4Contract.getAllTags();
+        const lengthBefore = allContentBefore.length;
+        const lengthAfter = allContentAfter.length;
+
+        expect(lengthAfter).to.equal(lengthBefore + 1);
+        expect(allContentAfter[lengthAfter - 1].title).to.equal(content.title);
+        expect(allContentAfter[lengthAfter - 1].url).to.equal(content.url);
+        expect(allContentAfter[lengthAfter - 1].submittedBy).to.equal(content.submittedBy);
+        expect(allContentAfter[lengthAfter - 1].likes).to.equal(content.likes);
+        const tagIds = allContentAfter[lengthAfter - 1].tagIds;
+        for (let i = 0, ni = tagIds.length; i < ni; i++) {
+            const tagId = Number(tagIds[i]);
+            const tag = allTags[tagId];
+            expect(content.tagIds[i]).to.include(tag.name);
+        }
+        // TODO: slashing checks
     });
 
     it("Should prevent litigation in correct content", async function () {
@@ -31,7 +46,10 @@ describe("Litigate", async function () {
             tagIds: [FIRST_TAG, SECOND_TAG],
         };
         const EIPSignature = await backendWallet.signTypedData(domain, types, content);
-        const result = await channel4Contract.litigateContent(content, EIPSignature);
-        // TODO: setup expects
+
+        const allContentBefore = await channel4Contract.getAllContent();
+        await channel4Contract.litigateContent(content, EIPSignature);
+        const allContentAfter = await channel4Contract.getAllContent();
+        expect(allContentAfter.length).to.equal(allContentBefore.length);
     });
 });
