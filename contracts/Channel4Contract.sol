@@ -6,7 +6,6 @@ import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
 contract Channel4Contract is Ownable, EIP712 {
-    using ECDSA for bytes32;
 
     struct Content {
         string title;
