@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { createContentIfNotExistsFixture, deployContractFixture } from "./fixtures";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { firstTag, secondTag } from "../constants";
+import { FIRST_TAG, SECOND_TAG } from "../constants";
 
 
 describe("Create", async function () {
@@ -14,7 +14,7 @@ describe("Create", async function () {
 
 
       expect( allContent.length ).to.equal(2); // remember that a content is added in deploy and other in create
-      expect( allTags.length ).to.equal(contentObj.tags.length); // remember that firstTag is included in content.tags
+      expect( allTags.length ).to.equal(contentObj.tags.length); // remember that FIRST_TAG is included in content.tags
       expect( allUsers.length ).to.equal(2); // remember that owner is included in deploy
     });
 
@@ -36,7 +36,7 @@ describe("Create", async function () {
 
       content.tagIds.forEach( (tag) => {
         const tagObj = allTags[Number(tag)];
-        expect([firstTag, secondTag]).to.include(tagObj.name);
+        expect([FIRST_TAG, SECOND_TAG]).to.include(tagObj.name);
         expect([owner.address, otherAccount1.address, otherAccount2.address]).to.include(tagObj.createdBy);
         expect( tagObj.contentIds.length ).to.greaterThanOrEqual(0);
         expect( tagObj.contentIds.length ).to.lessThanOrEqual(2);
@@ -58,7 +58,7 @@ describe("Create", async function () {
 
     it("Should not add new tags if they already exist", async function () {
       const { channel4Contract, contentObj, owner } = await loadFixture(createContentIfNotExistsFixture);
-      await channel4Contract.createTagIfNotExists(firstTag, owner.address);
+      await channel4Contract.createTagIfNotExists(FIRST_TAG, owner.address);
       const allTags = await channel4Contract.getAllTags();
       expect( allTags.length ).to.equal(contentObj.tags.length);
     });

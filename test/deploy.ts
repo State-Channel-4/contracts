@@ -1,6 +1,6 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { contentToAdd, firstTag, firstTitle, firstUrl, tagsToAdd, usersToAdd } from "../constants";
+import { CONTENT_TO_ADD, FIRST_TAG, FIRST_TITLE, FIRST_URL, TAGS_TO_ADD, USERS_TO_ADD } from "../constants";
 import { deployContractFixture } from "./fixtures";
 
 describe("Deploy", function () {
@@ -10,7 +10,7 @@ describe("Deploy", function () {
       const firstTagObject = allTags[0];
 
       expect( allTags.length ).to.equal(1);
-      expect( firstTagObject.name ).to.equal(firstTag);
+      expect( firstTagObject.name ).to.equal(FIRST_TAG);
       expect( firstTagObject.createdBy ).to.equal(owner.address);
       expect( firstTagObject.contentIds.length).to.equal(1);
     });
@@ -21,8 +21,8 @@ describe("Deploy", function () {
       const firstContentObject = allContent[0];
 
       expect( allContent.length ).to.equal(1);
-      expect( firstContentObject.title ).to.equal(firstTitle);
-      expect( firstContentObject.url).to.equal(firstUrl);
+      expect( firstContentObject.title ).to.equal(FIRST_TITLE);
+      expect( firstContentObject.url).to.equal(FIRST_URL);
       expect( firstContentObject.submittedBy ).to.equal(owner.address);
       expect( Number(firstContentObject.likes) ).to.equal(0);
       expect( firstContentObject.tagIds.length ).to.equal(1);
@@ -33,17 +33,17 @@ describe("Deploy", function () {
 
       await expect(
         channel4Contract.connect(otherAccount1).createContentIfNotExists(
-          firstTitle,
-          firstUrl,
+          FIRST_TITLE,
+          FIRST_URL,
           otherAccount1.address,
           0,
-          [firstTag]
+          [FIRST_TAG]
         )
       ).to.be.revertedWith("Ownable: caller is not the owner");
 
       await expect(
         channel4Contract.connect(otherAccount1).createTagIfNotExists(
-          firstTag,
+          FIRST_TAG,
           otherAccount1.address,
         )
       ).to.be.revertedWith("Ownable: caller is not the owner");
@@ -56,9 +56,9 @@ describe("Deploy", function () {
 
       await expect(
         channel4Contract.connect(otherAccount1).syncState(
-          usersToAdd,
-          tagsToAdd,
-          contentToAdd
+          USERS_TO_ADD,
+          TAGS_TO_ADD,
+          CONTENT_TO_ADD
         )
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
@@ -68,14 +68,14 @@ describe("Deploy", function () {
 
       await expect(
         channel4Contract.connect(otherAccount1).likeContent(
-          firstUrl,
+          FIRST_URL,
           otherAccount1.address
         )
       ).to.be.revertedWith("Ownable: caller is not the owner");
 
       await expect(
         channel4Contract.connect(otherAccount1).unlikeContent(
-          firstUrl,
+          FIRST_URL,
           otherAccount1.address
         )
       ).to.be.revertedWith("Ownable: caller is not the owner");

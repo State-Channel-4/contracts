@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { deployContractFixture } from "./fixtures";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { contentToAdd, firstTag, firstTitle, firstUrl, tagsToAdd, usersToAdd } from "../constants";
+import { CONTENT_TO_ADD, FIRST_TAG, FIRST_TITLE, FIRST_URL, TAGS_TO_ADD, USERS_TO_ADD } from "../constants";
 
 describe("Sync", async function () {
   it("Should succesfully load a bunch of content to the contract state", async function () {
@@ -9,18 +9,18 @@ describe("Sync", async function () {
       await channel4Contract.syncState(
         [],
         [],
-        contentToAdd
+        CONTENT_TO_ADD
       );
 
       const allTags = await channel4Contract.getAllTags();
       const allContentInContract = await channel4Contract.getAllContent();
       const allContentInBackend = [{
-        title: firstTitle,
-        url: firstUrl,
+        title: FIRST_TITLE,
+        url: FIRST_URL,
         submittedBy: owner.address,
         likes: 0,
-        tagIds: [firstTag],
-      }].concat(contentToAdd)
+        tagIds: [FIRST_TAG],
+      }].concat(CONTENT_TO_ADD)
 
       // check tags
       for (let i = 0, ni=allContentInContract.length; i < ni; i++) {
@@ -43,17 +43,17 @@ describe("Sync", async function () {
       const { channel4Contract, owner } = await loadFixture(deployContractFixture);
       await channel4Contract.syncState(
         [],
-        tagsToAdd,
+        TAGS_TO_ADD,
         []
       );
 
       const allContent = await channel4Contract.getAllContent();
       const allTags = await channel4Contract.getAllTags();
       const allTagsInBackend = [{
-        name: firstTag,
+        name: FIRST_TAG,
         createdBy: owner.address,
-        contentIds: [firstUrl],
-      }].concat(tagsToAdd);
+        contentIds: [FIRST_URL],
+      }].concat(TAGS_TO_ADD);
 
       for (let i = 0, ni=allTags.length; i < ni; i++) {
         expect(allTags[i].name).to.equal(allTagsInBackend[i].name);
@@ -73,7 +73,7 @@ describe("Sync", async function () {
     it("Should succesfully load a bunch of users to the contract state", async function () {
       const { channel4Contract, owner } = await loadFixture(deployContractFixture);
       await channel4Contract.syncState(
-        usersToAdd,
+        USERS_TO_ADD,
         [],
         []
       );
@@ -83,7 +83,7 @@ describe("Sync", async function () {
         userAddress: owner.address,
         numberOfLikedContent: 0,
         submittedContent: [0],
-      }].concat(usersToAdd);
+      }].concat(USERS_TO_ADD);
 
       for (let i = 0, ni = allUsersInContract.length; i < ni; i++) {
         expect(allUsersInContract[i].userAddress).to.equal(allUsersInBackend[i].userAddress);

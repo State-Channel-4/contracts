@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import { firstTag, firstTitle, firstUrl, secondTag, secondTitle, secondUrl } from "../constants";
+import { FIRST_TAG, FIRST_TITLE, FIRST_URL, SECOND_TAG, SECOND_TITLE, SECOND_URL } from "../constants";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 
@@ -11,7 +11,7 @@ export async function deployContractFixture(){
     const [owner, otherAccount1, otherAccount2] = await ethers.getSigners();
 
     const Channel4Contract = await ethers.getContractFactory("Channel4Contract");
-    const channel4Contract = await Channel4Contract.deploy(firstTitle, firstUrl, firstTag);
+    const channel4Contract = await Channel4Contract.deploy(FIRST_TITLE, FIRST_URL, FIRST_TAG);
 
     return { channel4Contract, owner, otherAccount1, otherAccount2 };
 }
@@ -19,11 +19,11 @@ export async function deployContractFixture(){
 export async function createContentIfNotExistsFixture(){
     const { channel4Contract, owner, otherAccount1, otherAccount2 } = await loadFixture(deployContractFixture);
     const contentObj = {
-        title: secondTitle,
-        url: secondUrl,
+        title: SECOND_TITLE,
+        url: SECOND_URL,
         submittedBy: otherAccount1.address,
         likes: 0,
-        tags: [firstTag, secondTag],
+        tags: [FIRST_TAG, SECOND_TAG],
     };
     await channel4Contract.createContentIfNotExists(
         contentObj.title,

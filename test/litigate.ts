@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { deployContractFixture } from "./fixtures";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { backendPrivateKey } from "../constants";
+import { BACKEND_PRIVATE_KEY } from "../constants";
 
 describe("Litigate", async function () {
     it("Should succesfully litigate a content", async function () {
@@ -22,16 +22,16 @@ describe("Litigate", async function () {
                 { name: 'tagIds', type: 'string[]' },
             ],
         };
-        const contentToAdd = {
+        const content = {
             title: 'Batman',
             url: 'https://www.dc.com/characters/batman',
             submittedBy: otherAccount1.address,
             likes: 0,
             tagIds: ['zero-knowledge'],
         };
-        const backendWallet = new ethers.Wallet(backendPrivateKey);
-        const EIPSignature = await backendWallet.signTypedData(domain, types, contentToAdd);
-        const signer = await channel4Contract.litigateContent(contentToAdd, EIPSignature);
+        const backendWallet = new ethers.Wallet(BACKEND_PRIVATE_KEY);
+        const EIPSignature = await backendWallet.signTypedData(domain, types, content);
+        const signer = await channel4Contract.litigateContent(content, EIPSignature);
         console.log('Something is wrong with the signatures')
         console.log(backendWallet.address)
         console.log(signer)
