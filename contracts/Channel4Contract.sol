@@ -281,15 +281,40 @@ contract Channel4Contract is Ownable, EIP712 {
     function litigateContent(
         ContentToAdd calldata content,
         bytes calldata signature
-    ) public view returns (bool) {
-        require(bytes(signature).length > 0, "Signature required");
+    ) public returns (string memory) {
         require( verifyMetaTx(content, signature), "Invalid signature");
-        // TODO: check if content is already registered
-        // TODO: if so return false
-
-        // TODO: add content to state
+        // check if content is already registered
+        string memory firstUrl = contents.list[0].url;
+        require( keccak256(bytes(content.url)) != keccak256(bytes(firstUrl)), "Initial content is not litigable" );
+        uint256 contentIndex = contents.ids[content.url];
+        if (contentIndex != 0){
+            // content exists, check if constant values are correct
+            Content memory existingContent = contents.list[contentIndex];
+            bool isTitleCorrect = keccak256(bytes(content.title)) == keccak256(bytes(existingContent.title));
+            bool isSubmittedByCorrect = content.submittedBy == existingContent.submittedBy;
+            bool isTagIdsCorrect = content.tagIds.length == existingContent.tagIds.length;
+            bool isTagNameCorrect = false;
+            if (isTagIdsCorrect){
+                for (uint256 i = 0; i < content.tagIds.length; i++) {
+                    isTagNameCorrect = keccak256(bytes(content.tagIds[i])) == keccak256(bytes(tags.list[existingContent.tagIds[i]].name));
+                    isTagIdsCorrect = isTagIdsCorrect && isTagNameCorrect;
+                }
+            }
+            // if Content values are correct return true
+            if (isTitleCorrect && isSubmittedByCorrect && isTagIdsCorrect){
+                return "Content is correct";
+            }
+        }
+        // content does not exists or values are incorrect, add it
+        createContentIfNotExists(
+            content.title,
+            content.url,
+            content.submittedBy,
+            content.likes,
+            content.tagIds
+        );
         // TODO: slash backend
-        return true;
+        return "Content does not exist or values are incorrect";
     }
 
 

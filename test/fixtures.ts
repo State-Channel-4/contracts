@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import { FIRST_TAG, FIRST_TITLE, FIRST_URL, SECOND_TAG, SECOND_TITLE, SECOND_URL } from "../constants";
+import { BACKEND_PRIVATE_KEY, FIRST_TAG, FIRST_TITLE, FIRST_URL, SECOND_TAG, SECOND_TITLE, SECOND_URL } from "../constants";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 
@@ -42,4 +42,26 @@ export async function likeContentFixture(){
         otherAccount1.address,
     );
     return { channel4Contract, owner, otherAccount1, otherAccount2, contentObj };
+}
+
+export async function prepareEIP712LitigateContentFixture(){
+    const { channel4Contract, otherAccount1, otherAccount2 } = await loadFixture(createContentIfNotExistsFixture);
+    const EIP712Domain = await channel4Contract.eip712Domain();
+    const domain = {
+        name: EIP712Domain.name,
+        version: EIP712Domain.version,
+        chainId: EIP712Domain.chainId,
+        verifyingContract: EIP712Domain.verifyingContract
+    };
+    const types = {
+        ContentToAdd: [
+            { name: 'title', type: 'string' },
+            { name: 'url', type: 'string' },
+            { name: 'submittedBy', type: 'address' },
+            { name: 'likes', type: 'uint256' },
+            { name: 'tagIds', type: 'string[]' },
+        ],
+    };
+    const backendWallet = new ethers.Wallet(BACKEND_PRIVATE_KEY);
+    return { channel4Contract, otherAccount1, otherAccount2, domain, types, backendWallet };
 }
