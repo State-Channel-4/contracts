@@ -2,8 +2,11 @@
 pragma solidity ^0.8.9;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
-contract Channel4Contract is Ownable {
+contract Channel4Contract is Ownable, EIP712 {
+    using ECDSA for bytes32;
 
     struct Content {
         string title;
@@ -39,12 +42,6 @@ contract Channel4Contract is Ownable {
         string[] contentIds;
     }
 
-    struct UserToAdd {
-        address userAddress;
-        uint256 numberOfLikedContent;
-        string[] submittedContent;
-    }
-
     struct Contents {
         Content[] list;
         mapping (string => uint256) ids;
@@ -61,6 +58,9 @@ contract Channel4Contract is Ownable {
         mapping (address => mapping (uint256 => bool)) likedContent;
     }
 
+    bytes32 private constant CONTENT_TO_ADD_TYPE = keccak256("ContentToAdd(string title,string url,address submittedBy,uint256 likes,string[] tagIds)");
+    address private constant BACKEND_ADDRESS = 0xb4a5714dd934a3391Bc670BEc9aee18b821e1Fd5;
+
     Contents private contents;
     Tags private tags;
     Users private users;
@@ -70,7 +70,7 @@ contract Channel4Contract is Ownable {
     /// @param title First content title
     /// @param url First content link
     /// @param tag First tag name
-    constructor (string memory title, string memory url, string memory tag) {
+    constructor (string memory title, string memory url, string memory tag) EIP712("Channel4Contract", "0.0.1") {
         address msgSender = msg.sender;
 
         Tag memory firstTag = Tag(tag, msgSender, new uint256[](0));
@@ -247,6 +247,47 @@ contract Channel4Contract is Ownable {
         users.likedContent[userAddress][indexContent] = false;
         contents.list[indexContent].likes = contents.list[indexContent].likes - 1;
     }
+
+
+
+    /// Ligitation functions
+
+    /// @notice Verify if EIP-712 signature is valid
+    /// @dev For EIP-712 in Solidity check https://gist.github.com/markodayan/e05f524b915f129c4f8500df816a369b
+    /// @param content Content message
+    /// @param signature EIP-712 signature
+    function verifyMetaTx(ContentToAdd calldata content, bytes calldata signature) public view returns (address) {
+        bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
+            CONTENT_TO_ADD_TYPE,
+            keccak256(bytes(content.title)),
+            keccak256(bytes(content.url)),
+            content.submittedBy,
+            keccak256(abi.encode(content.likes)),
+            keccak256(abi.encode(content.tagIds))
+        )));
+        address signer = ECDSA.recover(digest, signature);
+        return signer;
+    }
+
+    /// @notice Litigate a specific content (add it and claim slashing)
+    /// @dev For more info about verifying EIP-712 check https://github.com/aglawson/Meta-Transactions/blob/main/contracts/MinimalForwarder.sol
+    /// @param content Content to litigate
+    /// @param signature EIP-712 signature
+    function litigateContent(
+        ContentToAdd calldata content,
+        bytes calldata signature
+    ) public view returns (address) {
+        require(bytes(signature).length > 0, "Signature required");
+        //require( verifyMetaTx(content, signature), "Invalid signature");
+        return verifyMetaTx(content, signature);
+        // TODO: check if content is already registered
+        // TODO: if so return false
+
+        // TODO: add content to state
+        // TODO: slash backend
+        //return true;
+    }
+
 
 
     /// Reading functions

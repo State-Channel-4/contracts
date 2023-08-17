@@ -1,3 +1,6 @@
+export const backendPublicAddress = '0xb4a5714dd934a3391Bc670BEc9aee18b821e1Fd5';
+export const backendPrivateKey = 'bd0cef31fef0e40085b0f2801744057feb0a6b3d3a7d96d01eac0c08eea2e596';
+
 export const firstTitle = 'Privacy & Scaling Explorations';
 export const firstUrl = 'https://pse.dev/';
 export const firstTag = 'zero-knowledge';
