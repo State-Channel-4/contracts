@@ -256,17 +256,22 @@ contract Channel4Contract is Ownable, EIP712 {
     /// @dev For EIP-712 in Solidity check https://gist.github.com/markodayan/e05f524b915f129c4f8500df816a369b
     /// @param content Content message
     /// @param signature EIP-712 signature
-    function verifyMetaTx(ContentToAdd calldata content, bytes calldata signature) public view returns (address) {
+    function verifyMetaTx(ContentToAdd calldata content, bytes calldata signature) public view returns (bool) {
+        bytes32[] memory encodedTagIds = new bytes32[](content.tagIds.length);
+        for (uint256 i = 0; i < content.tagIds.length; i++) {
+            encodedTagIds[i] = keccak256(bytes(content.tagIds[i]));
+        }
+
         bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
             CONTENT_TO_ADD_TYPE,
             keccak256(bytes(content.title)),
             keccak256(bytes(content.url)),
             content.submittedBy,
-            keccak256(abi.encode(content.likes)),
-            keccak256(abi.encode(content.tagIds))
+            content.likes,
+            keccak256(abi.encodePacked( encodedTagIds ))
         )));
         address signer = ECDSA.recover(digest, signature);
-        return signer;
+        return signer == BACKEND_ADDRESS;
     }
 
     /// @notice Litigate a specific content (add it and claim slashing)
@@ -276,16 +281,15 @@ contract Channel4Contract is Ownable, EIP712 {
     function litigateContent(
         ContentToAdd calldata content,
         bytes calldata signature
-    ) public view returns (address) {
+    ) public view returns (bool) {
         require(bytes(signature).length > 0, "Signature required");
-        //require( verifyMetaTx(content, signature), "Invalid signature");
-        return verifyMetaTx(content, signature);
+        require( verifyMetaTx(content, signature), "Invalid signature");
         // TODO: check if content is already registered
         // TODO: if so return false
 
         // TODO: add content to state
         // TODO: slash backend
-        //return true;
+        return true;
     }
 
 

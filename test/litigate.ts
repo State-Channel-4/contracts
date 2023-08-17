@@ -7,11 +7,12 @@ import { BACKEND_PRIVATE_KEY } from "../constants";
 describe("Litigate", async function () {
     it("Should succesfully litigate a content", async function () {
         const { channel4Contract, otherAccount1 } = await loadFixture(deployContractFixture);
+        const EIP712Domain = await channel4Contract.eip712Domain();
         const domain = {
-            name: 'Channel4Contract',
-            version: '0.0.1',
-            chainId: 1,
-            verifyingContract: await channel4Contract.getAddress()
+            name: EIP712Domain.name,
+            version: EIP712Domain.version,
+            chainId: EIP712Domain.chainId,
+            verifyingContract: EIP712Domain.verifyingContract
         };
         const types = {
             ContentToAdd: [
@@ -31,10 +32,7 @@ describe("Litigate", async function () {
         };
         const backendWallet = new ethers.Wallet(BACKEND_PRIVATE_KEY);
         const EIPSignature = await backendWallet.signTypedData(domain, types, content);
-        const signer = await channel4Contract.litigateContent(content, EIPSignature);
-        console.log('Something is wrong with the signatures')
-        console.log(backendWallet.address)
-        console.log(signer)
+        const result = await channel4Contract.litigateContent(content, EIPSignature);
         // TODO: setup expects
     });
 });
