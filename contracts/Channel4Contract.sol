@@ -11,11 +11,13 @@ contract Channel4Contract is Data, Create, Interact, Litigate {
     constructor (
         string memory title,
         string memory url,
-        string memory tag
+        string memory tag,
+        uint256 slashingFee,
+        uint256 backendRegistrationFee
     )
     Data(title, url, tag)
     Create()
     Interact()
-    Litigate()
+    Litigate(slashingFee, backendRegistrationFee)
     {}
 }

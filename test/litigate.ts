@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { prepareEIP712LitigateContentFixture } from "./fixtures";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { FIRST_TAG, SECOND_TAG } from "../constants";
+import { FIRST_TAG, SECOND_TAG, SLASHING_FEE } from "../constants";
 
 describe("Litigate", async function () {
     it("Should add a missing content", async function () {
@@ -41,8 +41,8 @@ describe("Litigate", async function () {
             expect(content.tagIds[i]).to.include(tag.name);
         }
         // slashing checks
-        expect(contractBalanceAfter).to.equal(contractBalanceBefore - ethers.parseEther("0.001"));
-        expect(backendVaultAfter).to.equal(backendVaultBefore - ethers.parseEther("0.001"));
+        expect(contractBalanceAfter).to.equal(contractBalanceBefore - SLASHING_FEE);
+        expect(backendVaultAfter).to.equal(backendVaultBefore - SLASHING_FEE);
     });
 
     it("Should prevent litigation in correct content", async function () {

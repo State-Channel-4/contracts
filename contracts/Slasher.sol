@@ -10,8 +10,13 @@ abstract contract Slasher {
 
     address public backendAddress;
     uint256 public backendVault = 0;
-    uint256 private constant SLASHING_FEE = 0.001 ether;
-    uint256 private constant BACKEND_REGISTRATION_FEE = 0.01 ether;
+    uint256 private SLASHING_FEE = 0.001 ether;
+    uint256 private BACKEND_REGISTRATION_FEE = 0.01 ether;
+
+    constructor (uint256 slashingFee, uint256 backendRegistrationFee) {
+        SLASHING_FEE = slashingFee;
+        BACKEND_REGISTRATION_FEE = backendRegistrationFee;
+    }
 
     /// Registration functions
 

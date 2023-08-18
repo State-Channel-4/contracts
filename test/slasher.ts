@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { deployContractFixture, prepareEIP712LitigateContentFixture } from "./fixtures";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { BACKEND_PRIVATE_KEY, BACKEND_REGISTRATION_FEE } from "../constants";
+import { BACKEND_PRIVATE_KEY, BACKEND_REGISTRATION_FEE, VALUE_TO_RECHARGE } from "../constants";
 
 describe("Slasher", async function () {
     it("Should register only one backend address", async function () {
@@ -13,10 +13,10 @@ describe("Slasher", async function () {
         const backendWallet = new ethers.Wallet(BACKEND_PRIVATE_KEY);
 
         expect(backendPublicAddress).to.equal(backendWallet.address);
-        expect(backendVault).to.equal(ethers.parseEther(BACKEND_REGISTRATION_FEE));
+        expect(backendVault).to.equal(BACKEND_REGISTRATION_FEE);
         await expect(
             channel4Contract.connect(otherAccount1).registerBackend({
-                value: ethers.parseEther(BACKEND_REGISTRATION_FEE),
+                value: BACKEND_REGISTRATION_FEE,
             })
         ).to.be.revertedWith("Backend vault is full. No backend can be registered");
     });
@@ -25,7 +25,7 @@ describe("Slasher", async function () {
         const { channel4Contract, otherAccount1 } = await loadFixture(deployContractFixture);
 
         const backendWallet = new ethers.Wallet(BACKEND_PRIVATE_KEY, ethers.provider);
-        const valueToRecharge = ethers.parseEther("0.01");
+        const valueToRecharge = VALUE_TO_RECHARGE;
 
         const backendVaultOld = await channel4Contract.backendVault();
 

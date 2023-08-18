@@ -11,7 +11,10 @@ abstract contract Litigate is Data, Create, Slasher, EIP712 {
 
     bytes32 private constant CONTENT_TO_ADD_TYPE = keccak256("ContentToAdd(string title,string url,address submittedBy,uint256 likes,string[] tagIds)");
 
-    constructor() EIP712("Channel4Contract", "0.0.1") {}
+    constructor(uint256 slashingFee, uint256 backendRegistrationFee)
+        EIP712("Channel4Contract", "0.0.1")
+        Slasher(slashingFee, backendRegistrationFee)
+    {}
 
     /// Ligitation functions
 
