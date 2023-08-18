@@ -58,7 +58,8 @@ abstract contract Data {
     Users users;
 
     /// @notice Initialize contract with one tag and one content
-    /// @dev Initialize with one element in each list to prevent the mapping of initial tag (0) to be confused as a empty value
+    /// @dev Initialize with one element in each list to prevent
+    /// the mapping of initial tag (0) to be confused as a empty value
     /// @param title First content title
     /// @param url First content link
     /// @param tag First tag name

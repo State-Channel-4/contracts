@@ -9,7 +9,8 @@ import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
 abstract contract Litigate is Data, Create, Slasher, EIP712 {
 
-    bytes32 private constant CONTENT_TO_ADD_TYPE = keccak256("ContentToAdd(string title,string url,address submittedBy,uint256 likes,string[] tagIds)");
+    bytes32 private constant CONTENT_TO_ADD_TYPE =
+    keccak256("ContentToAdd(string title,string url,address submittedBy,uint256 likes,string[] tagIds)");
 
     constructor(uint256 slashingFee, uint256 backendRegistrationFee)
         EIP712("Channel4Contract", "0.0.1")
@@ -41,7 +42,8 @@ abstract contract Litigate is Data, Create, Slasher, EIP712 {
     }
 
     /// @notice Litigate a specific content (add it and claim slashing)
-    /// @dev For more info about verifying EIP-712 check https://github.com/aglawson/Meta-Transactions/blob/main/contracts/MinimalForwarder.sol
+    /// @dev For more info about verifying EIP-712
+    /// check https://github.com/aglawson/Meta-Transactions/blob/main/contracts/MinimalForwarder.sol
     /// @param content Content to litigate
     /// @param signature EIP-712 signature
     function litigateContent(
@@ -62,7 +64,10 @@ abstract contract Litigate is Data, Create, Slasher, EIP712 {
             bool isTagNameCorrect = false;
             if (isTagIdsCorrect){
                 for (uint256 i = 0; i < content.tagIds.length; i++) {
-                    isTagNameCorrect = keccak256(bytes(content.tagIds[i])) == keccak256(bytes(tags.list[existingContent.tagIds[i]].name));
+                    isTagNameCorrect =
+                        keccak256(bytes(content.tagIds[i]))
+                        ==
+                        keccak256(bytes(tags.list[existingContent.tagIds[i]].name));
                     isTagIdsCorrect = isTagIdsCorrect && isTagNameCorrect;
                 }
             }
