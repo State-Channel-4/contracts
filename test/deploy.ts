@@ -63,6 +63,14 @@ describe("Deploy", function () {
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
+    it("Should not expose creation functions to the outside", async function () {
+      const { channel4Contract } = await loadFixture(deployContractFixture);
+
+      expect(channel4Contract).to.not.have.property("_createContentIfNotExists");
+      expect(channel4Contract).to.not.have.property("_createTagIfNotExists");
+      expect(channel4Contract).to.not.have.property("_createUserIfNotExists");
+    });
+
     it("Should block interaction functions from non-owner", async function () {
       const { channel4Contract, otherAccount1 } = await loadFixture(deployContractFixture);
 

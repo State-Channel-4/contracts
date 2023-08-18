@@ -69,7 +69,7 @@ abstract contract Litigate is Data, Create, Slasher, EIP712 {
             }
         }
         // content does not exists or values are incorrect, add it
-        createContentIfNotExists(
+        _createContentIfNotExists(
             content.title,
             content.url,
             content.submittedBy,

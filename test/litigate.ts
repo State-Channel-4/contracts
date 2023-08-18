@@ -20,7 +20,7 @@ describe("Litigate", async function () {
         const contractBalanceBefore = await ethers.provider.getBalance(await channel4Contract.getAddress());
         const backendVaultBefore = await channel4Contract.backendVault();
 
-        await channel4Contract.litigateContent(content, EIPSignature);
+        await channel4Contract.connect(otherAccount1).litigateContent(content, EIPSignature);
 
         const allContentAfter = await channel4Contract.getAllContent();
         const contractBalanceAfter = await ethers.provider.getBalance(await channel4Contract.getAddress());
@@ -57,7 +57,7 @@ describe("Litigate", async function () {
         const EIPSignature = await backendWallet.signTypedData(domain, types, content);
 
         const allContentBefore = await channel4Contract.getAllContent();
-        await channel4Contract.litigateContent(content, EIPSignature);
+        await channel4Contract.connect(otherAccount1).litigateContent(content, EIPSignature);
         const allContentAfter = await channel4Contract.getAllContent();
         expect(allContentAfter.length).to.equal(allContentBefore.length);
     });

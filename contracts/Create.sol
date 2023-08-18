@@ -9,24 +9,25 @@ abstract contract Create is Data, Ownable {
 
     /// @notice Save URL in smart contract. Create tags if they don't exist
     /// @dev The function flow is: get url id, create tags (and save url id), save url
+    /// @dev This function can only be called by the contract or its dependencies
     /// @param title content title
     /// @param url content link. It works as an id as well because it is unique
     /// @param _tags Tag names list associated with that content
-    function createContentIfNotExists(
+    function _createContentIfNotExists(
         string memory title,
         string memory url,
         address submittedBy,
         uint256 likes,
         string[] calldata _tags
-    ) public onlyOwner returns (uint256) {
+    ) internal returns (uint256) {
         require(bytes(title).length > 0 && bytes(url).length > 0 && _tags.length > 0, "Invalid input");
-        uint256 userIndex = createUserIfNotExists(submittedBy);
+        uint256 userIndex = _createUserIfNotExists(submittedBy);
         // If tx fails then changes rollback. We can be sure content index in the beginning = content index in the end
         uint256 contentIndex = contents.list.length;
         // get tag indexes or create new tags. Also add content index to each tag
         uint256[] memory tagIndexes = new uint256[](_tags.length);
         for (uint256 i = 0; i < _tags.length; i++) {
-            tagIndexes[i] = createTagIfNotExists(_tags[i], submittedBy);
+            tagIndexes[i] = _createTagIfNotExists(_tags[i], submittedBy);
             tags.list[tagIndexes[i]].contentIds.push(contentIndex);
         }
         Content memory newContent = Content(title, url, submittedBy, likes, tagIndexes);
@@ -51,15 +52,27 @@ abstract contract Create is Data, Ownable {
             return index;
         }
     }
+    /// @notice wrapper for createContentIfNotExists
+    /// @dev this function can only be called by the owner
+    function createContentIfNotExists(
+        string memory title,
+        string memory url,
+        address submittedBy,
+        uint256 likes,
+        string[] calldata _tags
+    ) public onlyOwner returns (uint256) {
+        return _createContentIfNotExists(title, url, submittedBy, likes, _tags);
+    }
 
     /// @notice Get a tag id from array or add a new tag if it doesn't exist
     /// @dev It is used inside createContentIfNotExists but it should be available to be called alone
+    /// @dev This function can only be called by the contract or its dependencies
     /// @param name Tag name
     /// @param submittedBy user that submitted the tag
-    function createTagIfNotExists(
+    function _createTagIfNotExists(
         string memory name,
         address submittedBy
-    ) public onlyOwner returns (uint256){
+    ) internal returns (uint256){
         // check if it is the first tag in the array
         string memory firstTagName = tags.list[0].name;
         if (keccak256(bytes(name)) == keccak256(bytes(firstTagName))){
@@ -77,13 +90,22 @@ abstract contract Create is Data, Ownable {
         }
         return index;
     }
+    /// @notice wrapper for createContentIfNotExists
+    /// @dev this function can only be called by the owner
+    function createTagIfNotExists(
+        string memory name,
+        address submittedBy
+    ) public onlyOwner returns (uint256) {
+        return _createTagIfNotExists(name, submittedBy);
+    }
 
     /// @notice Get a user id from array or add a new user if it doesn't exist
     /// @dev It is used inside createContentIfNotExists but it should be available to be called alone
+    /// @dev This function can only be called by the contract or its dependencies
     /// @param userAddress User address
-    function createUserIfNotExists(
+    function _createUserIfNotExists(
         address userAddress
-    ) public onlyOwner returns (uint256){
+    ) internal returns (uint256){
         // check if content is the first one in the array
         address firstUserAddress = users.list[0].userAddress;
         if (userAddress == firstUserAddress){
@@ -101,6 +123,13 @@ abstract contract Create is Data, Ownable {
         }
         return index;
     }
+    /// @notice wrapper for createContentIfNotExists
+    /// @dev this function can only be called by the owner
+    function createUserIfNotExists(
+        address userAddress
+    ) public onlyOwner returns (uint256) {
+        return _createUserIfNotExists(userAddress);
+    }
 
     /// @notice Sync Content state with the backend. Only Content, Tag and User elements that have been updated
     /// @dev It can be called only by the backend to sync the state of the URLs
@@ -110,20 +139,20 @@ abstract contract Create is Data, Ownable {
         ContentToAdd[] calldata contentsToAdd
     ) public onlyOwner {
         for (uint256 i = 0; i < usersToAdd.length; i++) {
-            uint256 userIndex = createUserIfNotExists(
+            uint256 userIndex = _createUserIfNotExists(
                 usersToAdd[i].userAddress
             );
             users.list[userIndex].numberOfLikedContent = usersToAdd[i].numberOfLikedContent;
             users.list[userIndex].submittedContent = usersToAdd[i].submittedContent;
         }
         for (uint256 i = 0; i < tagsToAdd.length; i++) {
-            createTagIfNotExists(
+            _createTagIfNotExists(
                 tagsToAdd[i].name,
                 tagsToAdd[i].createdBy
             );
         }
         for (uint256 i = 0; i < contentsToAdd.length; i++) {
-            createContentIfNotExists(
+            _createContentIfNotExists(
                 contentsToAdd[i].title,
                 contentsToAdd[i].url,
                 contentsToAdd[i].submittedBy,
