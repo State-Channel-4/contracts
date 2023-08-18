@@ -8,8 +8,8 @@ import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
 abstract contract Slasher {
 
-    address backendAddress;
-    uint256 private backendVault = 0;
+    address public backendAddress;
+    uint256 public backendVault = 0;
     uint256 private constant SLASHING_FEE = 0.001 ether;
     uint256 private constant BACKEND_REGISTRATION_FEE = 0.01 ether;
 
@@ -19,7 +19,7 @@ abstract contract Slasher {
     /// @dev Backend address must pay 1 ether to register. It will get slashed if does not include content correctly
     function registerBackend() public payable {
         require(msg.value >= BACKEND_REGISTRATION_FEE, "Backend registration fee is 1 ether");
-        require(backendAddress != msg.sender, "Backend address already registered");
+        require(backendVault <= 2*SLASHING_FEE, "Backend vault is full. No backend can be registered");
         backendAddress = msg.sender;
         backendVault = backendVault + msg.value;
     }
