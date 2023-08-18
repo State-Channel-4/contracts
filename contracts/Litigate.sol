@@ -7,10 +7,55 @@ import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
 abstract contract Litigate is Data, Create, EIP712 {
-    constructor() EIP712("Channel4Contract", "0.0.1") {}
 
     bytes32 private constant CONTENT_TO_ADD_TYPE = keccak256("ContentToAdd(string title,string url,address submittedBy,uint256 likes,string[] tagIds)");
-    address private constant BACKEND_ADDRESS = 0xb4a5714dd934a3391Bc670BEc9aee18b821e1Fd5;
+
+    address private backendAddress;
+    uint256 private backendVault = 0;
+    uint256 private constant SLASHING_FEE = 0.001 ether;
+    uint256 private constant BACKEND_REGISTRATION_FEE = 0.01 ether;
+
+    constructor() EIP712("Channel4Contract", "0.0.1") {}
+
+    /// Registration functions
+
+    /// @notice Register a backend address
+    /// @dev Backend address must pay 1 ether to register. It will get slashed if does not include content correctly
+    function registerBackend() public payable {
+        require(msg.value >= BACKEND_REGISTRATION_FEE, "Backend registration fee is 1 ether");
+        require(backendAddress != msg.sender, "Backend address already registered");
+        backendAddress = msg.sender;
+        backendVault = backendVault + msg.value;
+    }
+
+    /// @notice Recharge backend vault
+    function rechargeVault() public payable {
+        require(backendAddress == msg.sender, "Only backend can recharge vault");
+        backendVault = backendVault + msg.value;
+    }
+
+    /// @notice Slash backend = send funds to litigator and reduce vault
+    /// @dev This function can only be called inside this contract
+    /// @param litigator Litigator address (user who called the litigate function)
+    function slashBackend(address litigator) private {
+        require(backendVault >= SLASHING_FEE, "Backend vault is empty");
+        backendVault = backendVault - SLASHING_FEE;
+        (bool success, ) = litigator.call{ value:SLASHING_FEE }("");
+        require(success, "Transfer to litigator failed.");
+    }
+
+    /// @notice Remove backend address and withdraw vault
+    /// @dev it only can be called if vault is less than double the slashing fee
+    function removeBackend() public {
+        require(backendVault <= 2*SLASHING_FEE, "Backend vault is not qualified to be removed");
+        uint256 remainingVault = backendVault;
+        backendVault = 0;
+        backendAddress = address(0);
+        (bool success, ) = backendAddress.call{ value:remainingVault }("");
+        require(success, "Transfer to backend failed.");
+    }
+
+
 
     /// Ligitation functions
 
@@ -33,7 +78,7 @@ abstract contract Litigate is Data, Create, EIP712 {
             keccak256(abi.encodePacked( encodedTagIds ))
         )));
         address signer = ECDSA.recover(digest, signature);
-        return signer == BACKEND_ADDRESS;
+        return signer == backendAddress;
     }
 
     /// @notice Litigate a specific content (add it and claim slashing)

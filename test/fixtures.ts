@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 import { BACKEND_PRIVATE_KEY, FIRST_TAG, FIRST_TITLE, FIRST_URL, SECOND_TAG, SECOND_TITLE, SECOND_URL } from "../constants";
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, setBalance } from "@nomicfoundation/hardhat-network-helpers";
 
 
 // We define a fixture to reuse the same setup in every test.
@@ -12,6 +12,14 @@ export async function deployContractFixture(){
 
     const Channel4Contract = await ethers.getContractFactory("Channel4Contract");
     const channel4Contract = await Channel4Contract.deploy(FIRST_TITLE, FIRST_URL, FIRST_TAG);
+
+    //const _provider = new ethers.provider.JsonRpcProvider();
+    let provider = ethers.provider;
+    const backendWallet = new ethers.Wallet(BACKEND_PRIVATE_KEY, provider);
+    await setBalance(backendWallet.address, 100n ** 18n);
+    await channel4Contract.connect(backendWallet).registerBackend({
+        value: ethers.parseEther("0.01"),
+    });
 
     return { channel4Contract, owner, otherAccount1, otherAccount2 };
 }
