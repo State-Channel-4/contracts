@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { ethers } from "hardhat";
 import { prepareEIP712LitigateContentFixture } from "./fixtures";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { FIRST_TAG, SECOND_TAG } from "../constants";
@@ -16,8 +17,14 @@ describe("Litigate", async function () {
         const EIPSignature = await backendWallet.signTypedData(domain, types, content);
 
         const allContentBefore = await channel4Contract.getAllContent();
+        const contractBalanceBefore = await ethers.provider.getBalance(await channel4Contract.getAddress());
+        const backendVaultBefore = await channel4Contract.backendVault();
+
         await channel4Contract.litigateContent(content, EIPSignature);
+
         const allContentAfter = await channel4Contract.getAllContent();
+        const contractBalanceAfter = await ethers.provider.getBalance(await channel4Contract.getAddress());
+        const backendVaultAfter = await channel4Contract.backendVault();
         const allTags = await channel4Contract.getAllTags();
         const lengthBefore = allContentBefore.length;
         const lengthAfter = allContentAfter.length;
@@ -33,7 +40,9 @@ describe("Litigate", async function () {
             const tag = allTags[tagId];
             expect(content.tagIds[i]).to.include(tag.name);
         }
-        // TODO: slashing checks
+        // slashing checks
+        expect(contractBalanceAfter).to.equal(contractBalanceBefore - ethers.parseEther("0.001"));
+        expect(backendVaultAfter).to.equal(backendVaultBefore - ethers.parseEther("0.001"));
     });
 
     it("Should prevent litigation in correct content", async function () {

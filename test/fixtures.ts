@@ -14,7 +14,7 @@ export async function deployContractFixture(){
     const channel4Contract = await Channel4Contract.deploy(FIRST_TITLE, FIRST_URL, FIRST_TAG);
 
     const backendWallet = new ethers.Wallet(BACKEND_PRIVATE_KEY, ethers.provider);
-    await setBalance(backendWallet.address, 100n ** 18n);
+    await setBalance(backendWallet.address, 10n ** 18n);
     await channel4Contract.connect(backendWallet).registerBackend({
         value: ethers.parseEther(BACKEND_REGISTRATION_FEE),
     });
@@ -68,6 +68,6 @@ export async function prepareEIP712LitigateContentFixture(){
             { name: 'tagIds', type: 'string[]' },
         ],
     };
-    const backendWallet = new ethers.Wallet(BACKEND_PRIVATE_KEY);
+    const backendWallet = new ethers.Wallet(BACKEND_PRIVATE_KEY, ethers.provider);
     return { channel4Contract, otherAccount1, otherAccount2, domain, types, backendWallet };
 }

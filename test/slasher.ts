@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { deployContractFixture } from "./fixtures";
+import { deployContractFixture, prepareEIP712LitigateContentFixture } from "./fixtures";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { BACKEND_PRIVATE_KEY, BACKEND_REGISTRATION_FEE } from "../constants";
 
@@ -48,7 +48,31 @@ describe("Slasher", async function () {
     });
 
     it("Should remove backend address if vault is low enough", async function () {
-        const { channel4Contract, owner } = await loadFixture(deployContractFixture);
-        // TODO: complete this test
+        const { channel4Contract, otherAccount1, domain, types, backendWallet } = await loadFixture(prepareEIP712LitigateContentFixture);
+        // if vault is not low enough then revert remove function
+        await expect(
+            channel4Contract.connect(backendWallet).removeBackend()
+        ).to.be.revertedWith('Backend vault is not qualified to be removed');
+
+        // litigate and lose
+        for (let i = 0; i < 8; i++) {
+            const content = {
+                title: `Something-${i}`,
+                url: `https://www.something.com/${i}`,
+                submittedBy: otherAccount1.address,
+                likes: 0,
+                tagIds: ['something'],
+            };
+            const EIPSignature = await backendWallet.signTypedData(domain, types, content);
+            await channel4Contract.litigateContent(content, EIPSignature);
+        }
+
+        // try remove again and it should work
+        await channel4Contract.connect(backendWallet).removeBackend();
+
+        const backendVault = await channel4Contract.backendVault();
+        const contractBalance = await ethers.provider.getBalance(await channel4Contract.getAddress());
+        expect(Number(backendVault)).to.equal(0);
+        expect(Number(contractBalance)).to.equal(0);
     });
 });
