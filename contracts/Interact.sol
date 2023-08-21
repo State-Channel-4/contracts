@@ -2,15 +2,15 @@
 pragma solidity ^0.8.9;
 
 import { Data } from "./Data.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { OnlyBackend } from "./OnlyBackend.sol";
 
-abstract contract Interact is Data, Ownable {
+abstract contract Interact is Data, OnlyBackend {
     /// Interaction functions
 
     /// @notice Like a specific content
     /// @param url content url (works as an id)
     /// @param submittedBy user that submitted the content
-    function likeContent(string memory url, address submittedBy) public onlyOwner {
+    function likeContent(string memory url, address submittedBy) public onlyBackend {
         uint256 indexContent = contents.ids[url];
         address userAddress = submittedBy;
         uint256 userIndex = users.ids[userAddress];
@@ -25,7 +25,7 @@ abstract contract Interact is Data, Ownable {
     /// @notice Unlike a specific URL
     /// @param url content url (works as an id)
     /// @param submittedBy user that submitted the content
-    function unlikeContent(string memory url, address submittedBy) public onlyOwner {
+    function unlikeContent(string memory url, address submittedBy) public onlyBackend {
         uint256 indexContent = contents.ids[url];
         address userAddress = submittedBy;
         uint256 userIndex = users.ids[userAddress];

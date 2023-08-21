@@ -2,9 +2,9 @@
 pragma solidity ^0.8.9;
 
 import { Data } from "./Data.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { OnlyBackend } from "./OnlyBackend.sol";
 
-abstract contract Create is Data, Ownable {
+abstract contract Create is Data, OnlyBackend {
     /// Creation functions
 
     /// @notice Save URL in smart contract. Create tags if they don't exist
@@ -53,14 +53,14 @@ abstract contract Create is Data, Ownable {
         }
     }
     /// @notice wrapper for createContentIfNotExists
-    /// @dev this function can only be called by the owner
+    /// @dev this function can only be called by the backend
     function createContentIfNotExists(
         string memory title,
         string memory url,
         address submittedBy,
         uint256 likes,
         string[] calldata _tags
-    ) public onlyOwner returns (uint256) {
+    ) public onlyBackend returns (uint256) {
         return _createContentIfNotExists(title, url, submittedBy, likes, _tags);
     }
 
@@ -91,11 +91,11 @@ abstract contract Create is Data, Ownable {
         return index;
     }
     /// @notice wrapper for createContentIfNotExists
-    /// @dev this function can only be called by the owner
+    /// @dev this function can only be called by the backend
     function createTagIfNotExists(
         string memory name,
         address submittedBy
-    ) public onlyOwner returns (uint256) {
+    ) public onlyBackend returns (uint256) {
         return _createTagIfNotExists(name, submittedBy);
     }
 
@@ -124,10 +124,10 @@ abstract contract Create is Data, Ownable {
         return index;
     }
     /// @notice wrapper for createContentIfNotExists
-    /// @dev this function can only be called by the owner
+    /// @dev this function can only be called by the backend
     function createUserIfNotExists(
         address userAddress
-    ) public onlyOwner returns (uint256) {
+    ) public onlyBackend returns (uint256) {
         return _createUserIfNotExists(userAddress);
     }
 
@@ -137,7 +137,7 @@ abstract contract Create is Data, Ownable {
         User[] calldata usersToAdd,
         TagToAdd[] calldata tagsToAdd,
         ContentToAdd[] calldata contentsToAdd
-    ) public onlyOwner {
+    ) public onlyBackend {
         for (uint256 i = 0; i < usersToAdd.length; i++) {
             uint256 userIndex = _createUserIfNotExists(
                 usersToAdd[i].userAddress

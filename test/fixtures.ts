@@ -20,7 +20,7 @@ import {
 // and reset Hardhat Network to that snapshot in every test.
 export async function deployContractFixture() {
   // Contracts are deployed using the first signer/account by default
-  const [owner, otherAccount1, otherAccount2] = await ethers.getSigners();
+  const [deployer, otherAccount1, otherAccount2] = await ethers.getSigners();
 
   const Channel4Contract = await ethers.getContractFactory('Channel4Contract');
   const channel4Contract = await Channel4Contract.deploy(
@@ -37,12 +37,23 @@ export async function deployContractFixture() {
     value: BACKEND_REGISTRATION_FEE,
   });
 
-  return { channel4Contract, owner, otherAccount1, otherAccount2 };
+  return {
+    channel4Contract,
+    deployer,
+    otherAccount1,
+    otherAccount2,
+    backendWallet,
+  };
 }
 
 export async function createContentIfNotExistsFixture() {
-  const { channel4Contract, owner, otherAccount1, otherAccount2 } =
-    await loadFixture(deployContractFixture);
+  const {
+    channel4Contract,
+    deployer,
+    otherAccount1,
+    otherAccount2,
+    backendWallet,
+  } = await loadFixture(deployContractFixture);
   const contentObj = {
     title: SECOND_TITLE,
     url: SECOND_URL,
@@ -50,27 +61,50 @@ export async function createContentIfNotExistsFixture() {
     likes: 0,
     tags: [FIRST_TAG, SECOND_TAG],
   };
-  await channel4Contract.createContentIfNotExists(
-    contentObj.title,
-    contentObj.url,
-    contentObj.submittedBy,
-    contentObj.likes,
-    contentObj.tags,
-  );
-  return { channel4Contract, owner, otherAccount1, otherAccount2, contentObj };
+  await channel4Contract
+    .connect(backendWallet)
+    .createContentIfNotExists(
+      contentObj.title,
+      contentObj.url,
+      contentObj.submittedBy,
+      contentObj.likes,
+      contentObj.tags,
+    );
+  return {
+    channel4Contract,
+    deployer,
+    otherAccount1,
+    otherAccount2,
+    contentObj,
+    backendWallet,
+  };
 }
 
 export async function likeContentFixture() {
-  const { channel4Contract, owner, otherAccount1, otherAccount2, contentObj } =
-    await loadFixture(createContentIfNotExistsFixture);
-  await channel4Contract.likeContent(contentObj.url, otherAccount1.address);
-  return { channel4Contract, owner, otherAccount1, otherAccount2, contentObj };
+  const {
+    channel4Contract,
+    deployer,
+    otherAccount1,
+    otherAccount2,
+    contentObj,
+    backendWallet,
+  } = await loadFixture(createContentIfNotExistsFixture);
+  await channel4Contract
+    .connect(backendWallet)
+    .likeContent(contentObj.url, otherAccount1.address);
+  return {
+    channel4Contract,
+    deployer,
+    otherAccount1,
+    otherAccount2,
+    contentObj,
+    backendWallet,
+  };
 }
 
 export async function prepareEIP712LitigateContentFixture() {
-  const { channel4Contract, otherAccount1, otherAccount2 } = await loadFixture(
-    createContentIfNotExistsFixture,
-  );
+  const { channel4Contract, otherAccount1, otherAccount2, backendWallet } =
+    await loadFixture(createContentIfNotExistsFixture);
   const EIP712Domain = await channel4Contract.eip712Domain();
   const domain = {
     name: EIP712Domain.name,
@@ -87,7 +121,6 @@ export async function prepareEIP712LitigateContentFixture() {
       { name: 'tagIds', type: 'string[]' },
     ],
   };
-  const backendWallet = new ethers.Wallet(BACKEND_PRIVATE_KEY, ethers.provider);
   return {
     channel4Contract,
     otherAccount1,

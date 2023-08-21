@@ -12,7 +12,7 @@ import { deployContractFixture } from './fixtures';
 
 describe('Deploy', function () {
   it('Should have one element in tags array', async function () {
-    const { channel4Contract, owner } = await loadFixture(
+    const { channel4Contract, deployer } = await loadFixture(
       deployContractFixture,
     );
     const allTags = await channel4Contract.getAllTags();
@@ -20,12 +20,12 @@ describe('Deploy', function () {
 
     expect(allTags.length).to.equal(1);
     expect(firstTagObject.name).to.equal(FIRST_TAG);
-    expect(firstTagObject.createdBy).to.equal(owner.address);
+    expect(firstTagObject.createdBy).to.equal(deployer.address);
     expect(firstTagObject.contentIds.length).to.equal(1);
   });
 
   it('Should have one element in content array', async function () {
-    const { channel4Contract, owner } = await loadFixture(
+    const { channel4Contract, deployer } = await loadFixture(
       deployContractFixture,
     );
     const allContent = await channel4Contract.getAllContent();
@@ -34,12 +34,12 @@ describe('Deploy', function () {
     expect(allContent.length).to.equal(1);
     expect(firstContentObject.title).to.equal(FIRST_TITLE);
     expect(firstContentObject.url).to.equal(FIRST_URL);
-    expect(firstContentObject.submittedBy).to.equal(owner.address);
+    expect(firstContentObject.submittedBy).to.equal(deployer.address);
     expect(Number(firstContentObject.likes)).to.equal(0);
     expect(firstContentObject.tagIds.length).to.equal(1);
   });
 
-  it('Should block creation functions from non-owner', async function () {
+  it('Should block creation functions from non-backend', async function () {
     const { channel4Contract, otherAccount1 } = await loadFixture(
       deployContractFixture,
     );
@@ -54,25 +54,25 @@ describe('Deploy', function () {
           0,
           [FIRST_TAG],
         ),
-    ).to.be.revertedWith('Ownable: caller is not the owner');
+    ).to.be.revertedWith('Caller is not the backend');
 
     await expect(
       channel4Contract
         .connect(otherAccount1)
         .createTagIfNotExists(FIRST_TAG, otherAccount1.address),
-    ).to.be.revertedWith('Ownable: caller is not the owner');
+    ).to.be.revertedWith('Caller is not the backend');
 
     await expect(
       channel4Contract
         .connect(otherAccount1)
         .createUserIfNotExists(otherAccount1.address),
-    ).to.be.revertedWith('Ownable: caller is not the owner');
+    ).to.be.revertedWith('Caller is not the backend');
 
     await expect(
       channel4Contract
         .connect(otherAccount1)
         .syncState(USERS_TO_ADD, TAGS_TO_ADD, CONTENT_TO_ADD),
-    ).to.be.revertedWith('Ownable: caller is not the owner');
+    ).to.be.revertedWith('Caller is not the backend');
   });
 
   it('Should not expose creation functions to the outside', async function () {
@@ -83,7 +83,7 @@ describe('Deploy', function () {
     expect(channel4Contract).to.not.have.property('_createUserIfNotExists');
   });
 
-  it('Should block interaction functions from non-owner', async function () {
+  it('Should block interaction functions from non-backend', async function () {
     const { channel4Contract, otherAccount1 } = await loadFixture(
       deployContractFixture,
     );
@@ -92,12 +92,12 @@ describe('Deploy', function () {
       channel4Contract
         .connect(otherAccount1)
         .likeContent(FIRST_URL, otherAccount1.address),
-    ).to.be.revertedWith('Ownable: caller is not the owner');
+    ).to.be.revertedWith('Caller is not the backend');
 
     await expect(
       channel4Contract
         .connect(otherAccount1)
         .unlikeContent(FIRST_URL, otherAccount1.address),
-    ).to.be.revertedWith('Ownable: caller is not the owner');
+    ).to.be.revertedWith('Caller is not the backend');
   });
 });

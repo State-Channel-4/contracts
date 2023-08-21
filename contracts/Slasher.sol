@@ -3,12 +3,12 @@ pragma solidity ^0.8.9;
 
 import { Data } from "./Data.sol";
 import { Create } from "./Create.sol";
+import { OnlyBackend } from "./OnlyBackend.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
-abstract contract Slasher {
+abstract contract Slasher is OnlyBackend {
 
-    address public backendAddress;
     uint256 public backendVault = 0;
     uint256 private SLASHING_FEE = 0.001 ether;
     uint256 private BACKEND_REGISTRATION_FEE = 0.01 ether;

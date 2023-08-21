@@ -18,7 +18,7 @@ describe('Create', async function () {
 
     expect(allContent.length).to.equal(2); // remember that a content is added in deploy and other in create
     expect(allTags.length).to.equal(contentObj.tags.length); // remember that FIRST_TAG is included in content.tags
-    expect(allUsers.length).to.equal(2); // remember that owner is included in deploy
+    expect(allUsers.length).to.equal(2); // remember that deployer is included in deploy
   });
 
   it('Should have the corrent content object', async function () {
@@ -38,7 +38,7 @@ describe('Create', async function () {
     const {
       channel4Contract,
       contentObj,
-      owner,
+      deployer,
       otherAccount1,
       otherAccount2,
     } = await loadFixture(createContentIfNotExistsFixture);
@@ -49,7 +49,7 @@ describe('Create', async function () {
       const tagObj = allTags[Number(tag)];
       expect([FIRST_TAG, SECOND_TAG]).to.include(tagObj.name);
       expect([
-        owner.address,
+        deployer.address,
         otherAccount1.address,
         otherAccount2.address,
       ]).to.include(tagObj.createdBy);
@@ -59,13 +59,13 @@ describe('Create', async function () {
   });
 
   it('Should have the correct user list', async function () {
-    const { channel4Contract, owner, otherAccount1, otherAccount2 } =
+    const { channel4Contract, deployer, otherAccount1, otherAccount2 } =
       await loadFixture(createContentIfNotExistsFixture);
     const allUsers = await channel4Contract.getAllUsers();
 
     allUsers.forEach((user) => {
       expect([
-        owner.address,
+        deployer.address,
         otherAccount1.address,
         otherAccount2.address,
       ]).to.include(user.userAddress);
@@ -77,28 +77,32 @@ describe('Create', async function () {
   });
 
   it('Should not add new tags if they already exist', async function () {
-    const { channel4Contract, contentObj, owner } = await loadFixture(
-      createContentIfNotExistsFixture,
-    );
-    await channel4Contract.createTagIfNotExists(FIRST_TAG, owner.address);
+    const { channel4Contract, contentObj, deployer, backendWallet } =
+      await loadFixture(createContentIfNotExistsFixture);
+    await channel4Contract
+      .connect(backendWallet)
+      .createTagIfNotExists(FIRST_TAG, deployer.address);
     const allTags = await channel4Contract.getAllTags();
     expect(allTags.length).to.equal(contentObj.tags.length);
   });
 
   it("Should add new user if it doesn't exist", async function () {
-    const { channel4Contract, otherAccount1 } = await loadFixture(
-      deployContractFixture,
-    );
-    await channel4Contract.createUserIfNotExists(otherAccount1.address);
+    const { channel4Contract, otherAccount1, backendWallet } =
+      await loadFixture(deployContractFixture);
+    await channel4Contract
+      .connect(backendWallet)
+      .createUserIfNotExists(otherAccount1.address);
     const allUsers = await channel4Contract.getAllUsers();
     expect(allUsers.length).to.equal(2);
   });
 
   it('Should not add user if it exists', async function () {
-    const { channel4Contract, owner } = await loadFixture(
+    const { channel4Contract, deployer, backendWallet } = await loadFixture(
       deployContractFixture,
     );
-    await channel4Contract.createUserIfNotExists(owner.address);
+    await channel4Contract
+      .connect(backendWallet)
+      .createUserIfNotExists(deployer.address);
     const allUsers = await channel4Contract.getAllUsers();
     expect(allUsers.length).to.equal(1);
   });

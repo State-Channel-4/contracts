@@ -12,10 +12,12 @@ import {
 
 describe('Sync', async function () {
   it('Should succesfully load a bunch of content to the contract state', async function () {
-    const { channel4Contract, owner } = await loadFixture(
+    const { channel4Contract, deployer, backendWallet } = await loadFixture(
       deployContractFixture,
     );
-    await channel4Contract.syncState([], [], CONTENT_TO_ADD);
+    await channel4Contract
+      .connect(backendWallet)
+      .syncState([], [], CONTENT_TO_ADD);
 
     const allTags = await channel4Contract.getAllTags();
     const allContentInContract = await channel4Contract.getAllContent();
@@ -23,7 +25,7 @@ describe('Sync', async function () {
       {
         title: FIRST_TITLE,
         url: FIRST_URL,
-        submittedBy: owner.address,
+        submittedBy: deployer.address,
         likes: 0,
         tagIds: [FIRST_TAG],
       },
@@ -53,17 +55,19 @@ describe('Sync', async function () {
   });
 
   it('Should succesfully load a bunch of tags to the contract state', async function () {
-    const { channel4Contract, owner } = await loadFixture(
+    const { channel4Contract, deployer, backendWallet } = await loadFixture(
       deployContractFixture,
     );
-    await channel4Contract.syncState([], TAGS_TO_ADD, []);
+    await channel4Contract
+      .connect(backendWallet)
+      .syncState([], TAGS_TO_ADD, []);
 
     const allContent = await channel4Contract.getAllContent();
     const allTags = await channel4Contract.getAllTags();
     const allTagsInBackend = [
       {
         name: FIRST_TAG,
-        createdBy: owner.address,
+        createdBy: deployer.address,
         contentIds: [FIRST_URL],
       },
     ].concat(TAGS_TO_ADD);
@@ -84,15 +88,17 @@ describe('Sync', async function () {
   });
 
   it('Should succesfully load a bunch of users to the contract state', async function () {
-    const { channel4Contract, owner } = await loadFixture(
+    const { channel4Contract, deployer, backendWallet } = await loadFixture(
       deployContractFixture,
     );
-    await channel4Contract.syncState(USERS_TO_ADD, [], []);
+    await channel4Contract
+      .connect(backendWallet)
+      .syncState(USERS_TO_ADD, [], []);
 
     const allUsersInContract = await channel4Contract.getAllUsers();
     const allUsersInBackend = [
       {
-        userAddress: owner.address,
+        userAddress: deployer.address,
         numberOfLikedContent: 0,
         submittedContent: [0],
       },
