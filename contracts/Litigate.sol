@@ -15,6 +15,9 @@ abstract contract Litigate is Data, Create, Slasher, EIP712 {
     bytes32 private constant TAG_TO_ADD_TYPE =
     keccak256("TagToAdd(string name,address createdBy,string[] contentIds)");
 
+    bytes32 private constant LIKE_TO_VERIFY_TYPE =
+    keccak256("LikeToVerify(string title, address likedVBy)");
+
     constructor(uint256 slashingFee, uint256 backendRegistrationFee)
         EIP712("Channel4Contract", "0.0.1")
         Slasher(slashingFee, backendRegistrationFee)
@@ -59,6 +62,18 @@ abstract contract Litigate is Data, Create, Slasher, EIP712 {
             keccak256(bytes(tag.name)),
             tag.createdBy,
             keccak256(abi.encodePacked( encodedContentIds ))
+        )));
+        address signer = ECDSA.recover(digest, signature);
+        return signer == backendAddress;
+    }
+
+    /// @notice Verify if EIP-712 signature for like a specific content is valid
+    /// @dev For EIP-712 in Solidity check https://gist.github.com/markodayan/e05f524b915f129c4f8500df816a369b
+    function verifyMetaTxLike(LikeToVerify calldata likeToVerify, bytes calldata signature) public view returns (bool) {
+        bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
+            LIKE_TO_VERIFY_TYPE,
+            likeToVerify.title,
+            likeToVerify.likedBy
         )));
         address signer = ECDSA.recover(digest, signature);
         return signer == backendAddress;
@@ -143,4 +158,22 @@ abstract contract Litigate is Data, Create, Slasher, EIP712 {
         slashBackend(msg.sender);
         return true;
     }
+
+    /// @notice litigate like of specific content
+    /*function litigateLike(LikeToVerify calldata likeToVerify, bytes calldata signature) public returns (bool) {
+        require( verifyMetaTxLike(likeToVerify, signature), "Invalid signature" );
+        // check that is not the initial user
+        address firstUser = users.list[0].userAddress;
+        require (firstUser != likeToVerify.likedBy, "Initial user is not litigable" );
+        // check if user exists (zero means it doesnt)
+        uint256 userIndex = users.ids[likeToVerify.likedBy];
+        if (userIndex == 0){
+            return false;
+        }
+        // TODO: get contentIndex and check if it exists
+        // check if title is in user.likedContent
+        if (users.likedContent[likeToVerify.likedBy][contentIndex] == true){
+
+        }
+    }*/
 }

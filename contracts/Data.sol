@@ -37,6 +37,11 @@ abstract contract Data {
         string[] contentIds;
     }
 
+    struct LikeToVerify {
+        string title;
+        address likedBy;
+    }
+
     struct Contents {
         Content[] list;
         mapping (string => uint256) ids;
