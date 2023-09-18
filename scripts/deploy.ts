@@ -9,6 +9,7 @@ import {
 } from '../constants';
 async function main() {
   const network = await ethers.provider.getNetwork();
+  console.log(`====================================`);
   console.log(`Deploying Channel4Contract to ${network.name} (${network.chainId})...`)
   
   // deploy contract
@@ -32,6 +33,17 @@ async function main() {
   console.log(` - Slashing Fee: ${ethers.formatEther(SLASHING_FEE)} ether`);
   console.log(` - Backend Registration Fee: ${ethers.formatEther(BACKEND_REGISTRATION_FEE)} ether`);
   console.log(`====================================`);
+
+  // register deployer as backend
+  const [deployer] = await ethers.getSigners();
+  let tx = await channel4Contract.connect(deployer).registerBackend({
+    value: BACKEND_REGISTRATION_FEE,
+  });
+  await tx.wait();
+  console.log(`Registerd contract deployer ${deployer.address} as backend`);
+  console.log(`====================================`);
+
+
   // @todo: etherscan verification
 }
 
