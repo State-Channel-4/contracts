@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { ethers } from 'hardhat';
 import { deployContractFixture } from './fixtures';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import {
@@ -8,6 +9,7 @@ import {
   FIRST_URL,
   TAGS_TO_ADD,
   USERS_TO_ADD,
+  USER_PUBLIC_ADDRESS
 } from '../constants';
 
 describe('Sync', async function () {
@@ -17,7 +19,7 @@ describe('Sync', async function () {
     );
     await channel4Contract
       .connect(backendWallet)
-      .syncState([], [], CONTENT_TO_ADD);
+      .syncState([], [], CONTENT_TO_ADD, []);
 
     const allTags = await channel4Contract.getAllTags();
     const allContentInContract = await channel4Contract.getAllContent();
@@ -60,7 +62,7 @@ describe('Sync', async function () {
     );
     await channel4Contract
       .connect(backendWallet)
-      .syncState([], TAGS_TO_ADD, []);
+      .syncState([], TAGS_TO_ADD, [], []);
 
     const allContent = await channel4Contract.getAllContent();
     const allTags = await channel4Contract.getAllTags();
@@ -93,30 +95,44 @@ describe('Sync', async function () {
     );
     await channel4Contract
       .connect(backendWallet)
-      .syncState(USERS_TO_ADD, [], []);
+      .syncState(USERS_TO_ADD, [], [], []);
 
     const allUsersInContract = await channel4Contract.getAllUsers();
-    const allUsersInBackend = [
-      {
-        userAddress: deployer.address,
-        numberOfLikedContent: 0,
-        submittedContent: [0],
-      },
-    ].concat(USERS_TO_ADD);
+    const allUsersInBackend = [deployer.address, ...USERS_TO_ADD];
 
     for (let i = 0, ni = allUsersInContract.length; i < ni; i++) {
-      expect(allUsersInContract[i].userAddress).to.equal(
-        allUsersInBackend[i].userAddress,
-      );
-      expect(allUsersInContract[i].numberOfLikedContent).to.equal(
-        allUsersInBackend[i].numberOfLikedContent,
-      );
+      expect(allUsersInContract[i].userAddress).to.equal(allUsersInBackend[i]);
+    }
+  });
 
-      const submittedContentInContract = allUsersInContract[i].submittedContent;
-      const submittedContentInBackend = allUsersInBackend[i].submittedContent;
-      submittedContentInContract.forEach((contentIndex, j) => {
-        expect(Number(contentIndex)).to.equal(submittedContentInBackend[j]);
-      });
+  it('Should succesfully load a bunch of likes to the contract state', async function () {
+    // load deployed contract fixture
+    const { channel4Contract, backendWallet } = await loadFixture(deployContractFixture);
+
+    // load accounts for test
+    const [deployer, alice, bob] = await ethers.getSigners();
+    const usersToAdd = [USER_PUBLIC_ADDRESS, alice.address, bob.address];
+    const allUsers = [deployer.address, ...usersToAdd];
+
+    // build likes
+    const pendingActions = [
+      { submittedBy: usersToAdd[0], url: CONTENT_TO_ADD[0].url },
+      { submittedBy: usersToAdd[1], url: CONTENT_TO_ADD[0].url },
+    ];
+
+    // sync state
+    await channel4Contract
+      .connect(backendWallet)
+      .syncState(usersToAdd, TAGS_TO_ADD, CONTENT_TO_ADD, pendingActions);
+
+    // check for existence of users with expected likes
+    const expectedLikes = [0, 1, 1, 0]
+    const contractUsers = await channel4Contract.getAllUsers();
+    for (let i = 0; i < contractUsers.length; i++) {
+      // check for expected address
+      expect(contractUsers[i].userAddress).to.equal(allUsers[i]);
+      // check for expected like #
+      expect(Number(contractUsers[i].numberOfLikedContent)).to.equal(expectedLikes[i]);
     }
   });
 });

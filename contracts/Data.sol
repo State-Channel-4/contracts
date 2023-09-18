@@ -31,10 +31,22 @@ abstract contract Data {
         string[] tagIds;
     }
 
+    struct ContentToSync {
+        string title;
+        string url;
+        address submittedBy;
+        string[] tagIds;
+    }
+
     struct TagToAdd {
         string name;
         address createdBy;
         string[] contentIds;
+    }
+
+    struct TagToSync {
+        string name;
+        address createdBy;
     }
 
     struct LikeToVerify {
@@ -56,6 +68,11 @@ abstract contract Data {
         User[] list;
         mapping (address => uint256) ids;
         mapping (address => mapping (uint256 => bool)) likedContent;
+    }
+
+    struct Pending {
+        address submittedBy;
+        string url;
     }
 
     Contents contents;
