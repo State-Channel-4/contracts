@@ -96,27 +96,10 @@ describe('Sync', async function () {
       .syncState(USERS_TO_ADD, [], []);
 
     const allUsersInContract = await channel4Contract.getAllUsers();
-    const allUsersInBackend = [
-      {
-        userAddress: deployer.address,
-        numberOfLikedContent: 0,
-        submittedContent: [0],
-      },
-    ].concat(USERS_TO_ADD);
+    const allUsersInBackend = [deployer.address, ...USERS_TO_ADD];
 
     for (let i = 0, ni = allUsersInContract.length; i < ni; i++) {
-      expect(allUsersInContract[i].userAddress).to.equal(
-        allUsersInBackend[i].userAddress,
-      );
-      expect(allUsersInContract[i].numberOfLikedContent).to.equal(
-        allUsersInBackend[i].numberOfLikedContent,
-      );
-
-      const submittedContentInContract = allUsersInContract[i].submittedContent;
-      const submittedContentInBackend = allUsersInBackend[i].submittedContent;
-      submittedContentInContract.forEach((contentIndex, j) => {
-        expect(Number(contentIndex)).to.equal(submittedContentInBackend[j]);
-      });
+      expect(allUsersInContract[i].userAddress).to.equal(allUsersInBackend[i]);
     }
   });
 });

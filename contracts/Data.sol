@@ -53,6 +53,11 @@ abstract contract Data {
         mapping (address => mapping (uint256 => bool)) likedContent;
     }
 
+    struct Pending {
+        address submittedBy;
+        string url;
+    }
+
     Contents contents;
     Tags tags;
     Users users;

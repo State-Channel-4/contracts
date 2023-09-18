@@ -17,13 +17,14 @@ export const SECOND_TITLE = 'Google';
 export const SECOND_URL = 'https://google.com/';
 export const SECOND_TAG = 'web-search';
 
-export const USERS_TO_ADD = [
-  {
-    userAddress: '0xE4721A80C6e56f4ebeed6acEE91b3ee715e7dD64',
-    numberOfLikedContent: 0,
-    submittedContent: [1],
-  },
-];
+// export const USERS_TO_ADD = [
+//   {
+//     userAddress: '0xE4721A80C6e56f4ebeed6acEE91b3ee715e7dD64',
+//     numberOfLikedContent: 0,
+//     submittedContent: [1],
+//   },
+// ];
+export const USERS_TO_ADD = ["0xE4721A80C6e56f4ebeed6acEE91b3ee715e7dD64"];
 export const TAGS_TO_ADD = [
   {
     name: 'music',

@@ -130,35 +130,4 @@ abstract contract Create is Data, OnlyBackend {
     ) public onlyBackend returns (uint256) {
         return _createUserIfNotExists(userAddress);
     }
-
-    /// @notice Sync Content state with the backend. Only Content, Tag and User elements that have been updated
-    /// @dev It can be called only by the backend to sync the state of the URLs
-    function syncState(
-        User[] calldata usersToAdd,
-        TagToAdd[] calldata tagsToAdd,
-        ContentToAdd[] calldata contentsToAdd
-    ) public onlyBackend {
-        for (uint256 i = 0; i < usersToAdd.length; i++) {
-            uint256 userIndex = _createUserIfNotExists(
-                usersToAdd[i].userAddress
-            );
-            users.list[userIndex].numberOfLikedContent = usersToAdd[i].numberOfLikedContent;
-            users.list[userIndex].submittedContent = usersToAdd[i].submittedContent;
-        }
-        for (uint256 i = 0; i < tagsToAdd.length; i++) {
-            _createTagIfNotExists(
-                tagsToAdd[i].name,
-                tagsToAdd[i].createdBy
-            );
-        }
-        for (uint256 i = 0; i < contentsToAdd.length; i++) {
-            _createContentIfNotExists(
-                contentsToAdd[i].title,
-                contentsToAdd[i].url,
-                contentsToAdd[i].submittedBy,
-                contentsToAdd[i].likes,
-                contentsToAdd[i].tagIds
-            );
-        }
-    }
 }

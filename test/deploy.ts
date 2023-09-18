@@ -91,13 +91,13 @@ describe('Deploy', function () {
     await expect(
       channel4Contract
         .connect(otherAccount1)
-        .likeContent(FIRST_URL, otherAccount1.address),
+        .toggleLike(FIRST_URL, otherAccount1.address),
     ).to.be.revertedWith('Caller is not the backend');
 
     await expect(
       channel4Contract
         .connect(otherAccount1)
-        .unlikeContent(FIRST_URL, otherAccount1.address),
+        .toggleLike(FIRST_URL, otherAccount1.address),
     ).to.be.revertedWith('Caller is not the backend');
   });
 });
