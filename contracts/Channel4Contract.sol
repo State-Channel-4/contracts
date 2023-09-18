@@ -29,8 +29,8 @@ contract Channel4Contract is Data, Create, Interact, Litigate {
     /// @param pendingActions - pending like/unlike actions to facilitate
     function syncState(
         address[] calldata usersToAdd,
-        TagToAdd[] calldata tagsToAdd,
-        ContentToAdd[] calldata contentsToAdd,
+        TagToSync[] calldata tagsToAdd,
+        ContentToSync[] calldata contentsToAdd,
         Pending[] calldata pendingActions
     ) public onlyBackend {
         for (uint256 i = 0; i < usersToAdd.length; i++)
@@ -46,7 +46,7 @@ contract Channel4Contract is Data, Create, Interact, Litigate {
                 contentsToAdd[i].title,
                 contentsToAdd[i].url,
                 contentsToAdd[i].submittedBy,
-                contentsToAdd[i].likes,
+                0,
                 contentsToAdd[i].tagIds
             );
         }

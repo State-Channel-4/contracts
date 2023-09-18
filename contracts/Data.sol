@@ -31,10 +31,22 @@ abstract contract Data {
         string[] tagIds;
     }
 
+    struct ContentToSync {
+        string title;
+        string url;
+        address submittedBy;
+        string[] tagIds;
+    }
+
     struct TagToAdd {
         string name;
         address createdBy;
         string[] contentIds;
+    }
+
+    struct TagToSync {
+        string name;
+        address createdBy;
     }
 
     struct Contents {
