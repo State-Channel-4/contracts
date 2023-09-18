@@ -71,7 +71,7 @@ describe('Deploy', function () {
     await expect(
       channel4Contract
         .connect(otherAccount1)
-        .syncState(USERS_TO_ADD, TAGS_TO_ADD, CONTENT_TO_ADD),
+        .syncState(USERS_TO_ADD, TAGS_TO_ADD, CONTENT_TO_ADD, []),
     ).to.be.revertedWith('Caller is not the backend');
   });
 

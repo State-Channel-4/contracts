@@ -23,10 +23,15 @@ contract Channel4Contract is Data, Create, Interact, Litigate {
 
     /// @notice Sync Content state with the backend. Only Content, Tag and User elements that have been updated
     /// @dev It can be called only by the backend to sync the state of the URLs
+    /// @param usersToAdd - addresses of new users to enroll in the contract
+    /// @param tagsToAdd - tags to add to the contract
+    /// @param contentsToAdd - url contents to add to the contract
+    /// @param pendingActions - pending like/unlike actions to facilitate
     function syncState(
         address[] calldata usersToAdd,
         TagToAdd[] calldata tagsToAdd,
-        ContentToAdd[] calldata contentsToAdd
+        ContentToAdd[] calldata contentsToAdd,
+        Pending[] calldata pendingActions
     ) public onlyBackend {
         for (uint256 i = 0; i < usersToAdd.length; i++)
             _createUserIfNotExists(usersToAdd[i]);
@@ -44,6 +49,9 @@ contract Channel4Contract is Data, Create, Interact, Litigate {
                 contentsToAdd[i].likes,
                 contentsToAdd[i].tagIds
             );
+        }
+        for (uint i = 0; i < pendingActions.length; i++) {
+            toggleLike(pendingActions[i].url, pendingActions[i].submittedBy);
         }
     }
 }
