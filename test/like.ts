@@ -18,12 +18,17 @@ describe('Like', async function () {
   });
 
   it('Should successfully unlike a Content', async function () {
-    const { channel4Contract, contentObj, otherAccount1, backendWallet } =
-      await loadFixture(likeContentFixture);
+    const {
+      channel4Contract,
+      contentObj,
+      otherAccount1,
+      backendWallet,
+      nonce,
+    } = await loadFixture(likeContentFixture);
 
     await channel4Contract
       .connect(backendWallet)
-      .toggleLike(contentObj.url, false, otherAccount1.address);
+      .toggleLike(contentObj.url, false, nonce + 1, otherAccount1.address);
     const content = await channel4Contract.getContent(contentObj.url);
     expect(Number(content.likes)).to.equal(0);
 

@@ -118,8 +118,18 @@ describe('Sync', async function () {
 
     // build likes
     const pendingActions = [
-      { submittedBy: usersToAdd[0], url: CONTENT_TO_ADD[0].url, liked: true },
-      { submittedBy: usersToAdd[1], url: CONTENT_TO_ADD[0].url, liked: true },
+      {
+        submittedBy: usersToAdd[0],
+        url: CONTENT_TO_ADD[0].url,
+        liked: true,
+        nonce: 1,
+      },
+      {
+        submittedBy: usersToAdd[1],
+        url: CONTENT_TO_ADD[0].url,
+        liked: true,
+        nonce: 1,
+      },
     ];
 
     // sync state

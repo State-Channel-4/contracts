@@ -54,11 +54,6 @@ abstract contract Data {
         address createdBy;
     }
 
-    struct LikeToVerify {
-        string title;
-        address likedBy;
-    }
-
     struct Contents {
         Content[] list;
         mapping (string => uint256) ids;
@@ -79,6 +74,7 @@ abstract contract Data {
         address submittedBy;
         string url;
         bool liked;
+        uint256 nonce;
     }
 
     Contents contents;

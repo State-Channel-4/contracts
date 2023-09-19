@@ -3,11 +3,12 @@ pragma solidity ^0.8.9;
 
 import { Data } from "./Data.sol";
 import { Create } from "./Create.sol";
+import { Interact } from "./Interact.sol";
 import { Slasher } from "./Slasher.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
-abstract contract Litigate is Data, Create, Slasher, EIP712 {
+abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
 
     bytes32 private constant CONTENT_TO_ADD_TYPE =
     keccak256("ContentToAdd(string title,string url,address submittedBy,uint256 likes,string[] tagIds)");
@@ -16,7 +17,7 @@ abstract contract Litigate is Data, Create, Slasher, EIP712 {
     keccak256("TagToAdd(string name,address createdBy,string[] contentIds)");
 
     bytes32 private constant LIKE_TO_VERIFY_TYPE =
-    keccak256("LikeToVerify(string title, address likedVBy)");
+    keccak256("Pending(address submittedBy,string url,bool liked, uint256 nonce)");
 
     constructor(uint256 slashingFee, uint256 backendRegistrationFee)
         EIP712("Channel4Contract", "0.0.1")
@@ -69,11 +70,13 @@ abstract contract Litigate is Data, Create, Slasher, EIP712 {
 
     /// @notice Verify if EIP-712 signature for like a specific content is valid
     /// @dev For EIP-712 in Solidity check https://gist.github.com/markodayan/e05f524b915f129c4f8500df816a369b
-    function verifyMetaTxLike(LikeToVerify calldata likeToVerify, bytes calldata signature) public view returns (bool) {
+    function verifyMetaTxLike(Pending calldata pending, bytes calldata signature) public view returns (bool) {
         bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
             LIKE_TO_VERIFY_TYPE,
-            likeToVerify.title,
-            likeToVerify.likedBy
+            pending.submittedBy,
+            keccak256(bytes(pending.url)),
+            pending.liked,
+            pending.nonce
         )));
         address signer = ECDSA.recover(digest, signature);
         return signer == backendAddress;
@@ -160,20 +163,33 @@ abstract contract Litigate is Data, Create, Slasher, EIP712 {
     }
 
     /// @notice litigate like of specific content
-    /*function litigateLike(LikeToVerify calldata likeToVerify, bytes calldata signature) public returns (bool) {
-        require( verifyMetaTxLike(likeToVerify, signature), "Invalid signature" );
+    function litigateLike(Pending calldata pending, bytes calldata signature) public returns (bool) {
+        require( verifyMetaTxLike(pending, signature), "Invalid signature" );
         // check that is not the initial user
         address firstUser = users.list[0].userAddress;
-        require (firstUser != likeToVerify.likedBy, "Initial user is not litigable" );
+        require (firstUser != pending.submittedBy, "Initial user is not litigable" );
         // check if user exists (zero means it doesnt)
-        uint256 userIndex = users.ids[likeToVerify.likedBy];
+        uint256 userIndex = users.ids[pending.submittedBy];
         if (userIndex == 0){
             return false;
         }
-        // TODO: get contentIndex and check if it exists
-        // check if title is in user.likedContent
-        if (users.likedContent[likeToVerify.likedBy][contentIndex] == true){
+        // get contentIndex and check if it exists
+        uint256 contentIndex = contents.ids[pending.url];
 
+        Like storage like = users.likedContent[pending.submittedBy][contentIndex];
+        // check if title is in user.likedContent
+        if (like.liked == pending.liked){
+            return false;
         }
-    }*/
+        if (like.nonce == pending.nonce){
+            return false;
+        }
+        toggleLike(
+            pending.url,
+            pending.liked,
+            pending.nonce,
+            pending.submittedBy
+        );
+        return true;
+    }
 }

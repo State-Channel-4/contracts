@@ -54,6 +54,7 @@ contract Channel4Contract is Data, Create, Interact, Litigate {
             toggleLike(
                 pendingActions[i].url,
                 pendingActions[i].liked,
+                pendingActions[i].nonce,
                 pendingActions[i].submittedBy
             );
         }

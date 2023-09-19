@@ -15,6 +15,7 @@ abstract contract Interact is Data, OnlyBackend {
     function toggleLike(
         string memory url,
         bool liked,
+        uint256 nonce,
         address submittedBy
     ) public onlyBackend {
         // index of content in id map
@@ -26,7 +27,7 @@ abstract contract Interact is Data, OnlyBackend {
         // toggle binary like state of content for user
         like.liked = liked;
         // increment nonce related to user-content
-        like.nonce++;
+        like.nonce = nonce;
         // increment or decrement user's liked content sum
         user.numberOfLikedContent = liked
             ? user.numberOfLikedContent + 1

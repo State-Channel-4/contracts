@@ -89,9 +89,10 @@ export async function likeContentFixture() {
     contentObj,
     backendWallet,
   } = await loadFixture(createContentIfNotExistsFixture);
+  const nonce = 1;
   await channel4Contract
     .connect(backendWallet)
-    .toggleLike(contentObj.url, true, otherAccount1.address);
+    .toggleLike(contentObj.url, true, nonce, otherAccount1.address);
   return {
     channel4Contract,
     deployer,
@@ -99,6 +100,7 @@ export async function likeContentFixture() {
     otherAccount2,
     contentObj,
     backendWallet,
+    nonce,
   };
 }
 
