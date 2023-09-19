@@ -23,6 +23,11 @@ abstract contract Data {
         uint256[] submittedContent;
     }
 
+    struct Like {
+        uint256 nonce;
+        bool liked;
+    }
+
     struct ContentToAdd {
         string title;
         string url;
@@ -67,12 +72,13 @@ abstract contract Data {
     struct Users {
         User[] list;
         mapping (address => uint256) ids;
-        mapping (address => mapping (uint256 => bool)) likedContent;
+        mapping (address => mapping (uint256 => Like)) likedContent;
     }
 
     struct Pending {
         address submittedBy;
         string url;
+        bool liked;
     }
 
     Contents contents;
@@ -179,7 +185,7 @@ abstract contract Data {
         uint256 resultIndex = 0;
         Content [] memory result = new Content[](users.list[userIndex].numberOfLikedContent);
         for (uint256 i = 0; i < contents.list.length; i++) {
-            if (users.likedContent[userAddress][i] == true){
+            if (users.likedContent[userAddress][i].liked == true){
                 result[resultIndex] = contents.list[i];
                 resultIndex++;
             }

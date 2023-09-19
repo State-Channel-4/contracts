@@ -23,7 +23,7 @@ describe('Like', async function () {
 
     await channel4Contract
       .connect(backendWallet)
-      .toggleLike(contentObj.url, otherAccount1.address);
+      .toggleLike(contentObj.url, false, otherAccount1.address);
     const content = await channel4Contract.getContent(contentObj.url);
     expect(Number(content.likes)).to.equal(0);
 
