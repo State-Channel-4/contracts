@@ -133,6 +133,32 @@ export async function prepareEIP712LitigateContentFixture() {
   };
 }
 
+export async function prepareEIP712LitigateTagFixture() {
+  const { channel4Contract, otherAccount1, otherAccount2, backendWallet } =
+    await loadFixture(createContentIfNotExistsFixture);
+  const EIP712Domain = await channel4Contract.eip712Domain();
+  const domain = {
+    name: EIP712Domain.name,
+    version: EIP712Domain.version,
+    chainId: EIP712Domain.chainId,
+    verifyingContract: EIP712Domain.verifyingContract,
+  };
+  const types = {
+    TagToSync: [
+      { name: 'name', type: 'string' },
+      { name: 'createdBy', type: 'address' },
+    ],
+  };
+  return {
+    channel4Contract,
+    otherAccount1,
+    otherAccount2,
+    domain,
+    types,
+    backendWallet,
+  };
+}
+
 export async function prepareEIP712LitigateLikeFixture() {
   const { channel4Contract, otherAccount1, otherAccount2, backendWallet } =
     await loadFixture(likeContentFixture);

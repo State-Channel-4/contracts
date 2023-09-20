@@ -43,12 +43,6 @@ abstract contract Data {
         string[] tagIds;
     }
 
-    struct TagToAdd {
-        string name;
-        address createdBy;
-        string[] contentIds;
-    }
-
     struct TagToSync {
         string name;
         address createdBy;

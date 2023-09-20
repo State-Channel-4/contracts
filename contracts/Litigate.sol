@@ -13,8 +13,8 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
     bytes32 private constant CONTENT_TO_ADD_TYPE =
     keccak256("ContentToAdd(string title,string url,address submittedBy,uint256 likes,string[] tagIds)");
 
-    bytes32 private constant TAG_TO_ADD_TYPE =
-    keccak256("TagToAdd(string name,address createdBy,string[] contentIds)");
+    bytes32 private constant TAG_TO_SYNC_TYPE =
+    keccak256("TagToSync(string name,address createdBy)");
 
     bytes32 private constant LIKE_TO_VERIFY_TYPE =
     keccak256("Pending(address submittedBy,string url,bool liked,uint256 nonce)");
@@ -52,17 +52,11 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
     /// @dev For EIP-712 in Solidity check https://gist.github.com/markodayan/e05f524b915f129c4f8500df816a369b
     /// @param tag Tag message
     /// @param signature EIP-712 signature
-    function verifyMetaTxTag(TagToAdd calldata tag, bytes calldata signature) public view returns (bool) {
-        bytes32[] memory encodedContentIds = new bytes32[](tag.contentIds.length);
-        for (uint256 i = 0; i< tag.contentIds.length; i++){
-            encodedContentIds[i] = keccak256(bytes(tag.contentIds[i]));
-        }
-
+    function verifyMetaTxTag(TagToSync calldata tag, bytes calldata signature) public view returns (bool) {
         bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
-            TAG_TO_ADD_TYPE,
+            TAG_TO_SYNC_TYPE,
             keccak256(bytes(tag.name)),
-            tag.createdBy,
-            keccak256(abi.encodePacked( encodedContentIds ))
+            tag.createdBy
         )));
         address signer = ECDSA.recover(digest, signature);
         return signer == backendAddress;
@@ -135,7 +129,7 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
     /// @param tag Tag to litigate
     /// @param signature EIP-712 signature
     function litigateTag(
-        TagToAdd calldata tag,
+        TagToSync calldata tag,
         bytes calldata signature
     ) public returns (bool) {
         require( verifyMetaTxTag(tag, signature), "Invalid signature" );
