@@ -1,6 +1,9 @@
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { prepareEIP712LitigateContentFixture } from './fixtures';
+import {
+  prepareEIP712LitigateContentFixture,
+  prepareEIP712LitigateLikeFixture,
+} from './fixtures';
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import { FIRST_TAG, SECOND_TAG, SLASHING_FEE } from '../constants';
 
@@ -80,5 +83,62 @@ describe('Litigate', async function () {
       .litigateContent(content, EIPSignature);
     const allContentAfter = await channel4Contract.getAllContent();
     expect(allContentAfter.length).to.equal(allContentBefore.length);
+  });
+
+  it('Should prevent litigation in content with wrong signature', async function () {
+    // TODO: implement this
+  });
+
+  it('Should add a missing tag', async function () {
+    // TODO: implement this
+  });
+
+  it('Should prevent litigation in correct tag', async function () {
+    // TODO: implement this
+  });
+
+  it('Should prevent litigation in tag with wrong signature', async function () {
+    // TODO: implement this
+  });
+
+  it('Should add missing likes', async function () {
+    const { channel4Contract, otherAccount1, domain, types, backendWallet } =
+      await loadFixture(prepareEIP712LitigateLikeFixture);
+    const like = {
+      submittedBy: otherAccount1.address,
+      url: 'https://google.com/',
+      liked: true,
+      nonce: 2, // this is 2nd time the content is given a like. 1st was the backend wallet
+    };
+    const EIPSignature = await backendWallet.signTypedData(domain, types, like);
+
+    const contentBefore = await channel4Contract.getContent(like.url);
+    const backendVaultBefore = await channel4Contract.backendVault();
+    const contractBalanceBefore = await ethers.provider.getBalance(
+      await channel4Contract.getAddress(),
+    );
+    await channel4Contract
+      .connect(otherAccount1)
+      .litigateLike(like, EIPSignature);
+    const contentAfter = await channel4Contract.getContent(like.url);
+    const backendVaultAfter = await channel4Contract.backendVault();
+    const contractBalanceAfter = await ethers.provider.getBalance(
+      await channel4Contract.getAddress(),
+    );
+
+    expect(Number(contentAfter.likes)).to.equal(
+      Number(contentBefore.likes) + 1,
+    );
+    // slashing checks
+    expect(contractBalanceAfter).to.equal(contractBalanceBefore - SLASHING_FEE);
+    expect(backendVaultAfter).to.equal(backendVaultBefore - SLASHING_FEE);
+  });
+
+  it('Should prevent litigation in correct likes', async function () {
+    // TODO: implement this
+  });
+
+  it('Should prevent litigation in likes with wrong signature', async function () {
+    // TODO: implement this
   });
 });

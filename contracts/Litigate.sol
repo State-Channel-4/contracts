@@ -17,7 +17,7 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
     keccak256("TagToAdd(string name,address createdBy,string[] contentIds)");
 
     bytes32 private constant LIKE_TO_VERIFY_TYPE =
-    keccak256("Pending(address submittedBy,string url,bool liked, uint256 nonce)");
+    keccak256("Pending(address submittedBy,string url,bool liked,uint256 nonce)");
 
     constructor(uint256 slashingFee, uint256 backendRegistrationFee)
         EIP712("Channel4Contract", "0.0.1")
@@ -163,6 +163,8 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
     }
 
     /// @notice litigate like of specific content
+    /// @param pending Like to litigate
+    /// @param signature EIP-712 signature
     function litigateLike(Pending calldata pending, bytes calldata signature) public returns (bool) {
         require( verifyMetaTxLike(pending, signature), "Invalid signature" );
         // check that is not the initial user
@@ -177,19 +179,31 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
         uint256 contentIndex = contents.ids[pending.url];
 
         Like storage like = users.likedContent[pending.submittedBy][contentIndex];
-        // check if title is in user.likedContent
-        if (like.liked == pending.liked){
-            return false;
+        if (like.nonce < pending.nonce){
+            _toggleLike(
+                pending.url,
+                pending.liked,
+                pending.nonce,
+                pending.submittedBy
+            );
+            slashBackend(msg.sender);
+            return true;
         }
-        if (like.nonce == pending.nonce){
+        if (like.nonce > pending.nonce){
             return false;
+        } else {
+            // like.nonce == pending.nonce
+            if (like.liked == pending.liked){
+                return false;
+            }
+            _toggleLike(
+                pending.url,
+                pending.liked,
+                pending.nonce,
+                pending.submittedBy
+            );
+            slashBackend(msg.sender);
+            return true;
         }
-        toggleLike(
-            pending.url,
-            pending.liked,
-            pending.nonce,
-            pending.submittedBy
-        );
-        return true;
     }
 }

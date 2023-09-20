@@ -132,3 +132,31 @@ export async function prepareEIP712LitigateContentFixture() {
     backendWallet,
   };
 }
+
+export async function prepareEIP712LitigateLikeFixture() {
+  const { channel4Contract, otherAccount1, otherAccount2, backendWallet } =
+    await loadFixture(likeContentFixture);
+  const EIP712Domain = await channel4Contract.eip712Domain();
+  const domain = {
+    name: EIP712Domain.name,
+    version: EIP712Domain.version,
+    chainId: EIP712Domain.chainId,
+    verifyingContract: EIP712Domain.verifyingContract,
+  };
+  const types = {
+    Pending: [
+      { name: 'submittedBy', type: 'address' },
+      { name: 'url', type: 'string' },
+      { name: 'liked', type: 'bool' },
+      { name: 'nonce', type: 'uint256' },
+    ],
+  };
+  return {
+    channel4Contract,
+    otherAccount1,
+    otherAccount2,
+    domain,
+    types,
+    backendWallet,
+  };
+}
