@@ -200,4 +200,29 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
             return true;
         }
     }
+
+    /// @notice litigate the number of likes of a specific content
+    /// @param url Content to litigate
+    function litigateNumberOfLikes(string calldata url) public returns (bool) {
+        // check if content exists
+        uint256 contentIndex = contents.ids[url];
+        if (contentIndex == 0){
+            return false;
+        }
+        // get contentIndex and check if it exists
+        Content storage content = contents.list[contentIndex];
+        uint256 numberOfLikes = content.likes;
+        uint256 numberOfLikesByUsers = 0;
+        for (uint256 i = 1; i < users.list.length; i++) {
+            if (users.likedContent[users.list[i].userAddress][contentIndex].liked){
+                numberOfLikesByUsers++;
+            }
+        }
+        if (numberOfLikes != numberOfLikesByUsers){
+            content.likes = numberOfLikesByUsers;
+            slashBackend(msg.sender);
+            return true;
+        }
+        return false;
+    }
 }
