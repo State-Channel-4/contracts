@@ -86,7 +86,26 @@ describe('Litigate', async function () {
   });
 
   it('Should prevent litigation in content with wrong signature', async function () {
-    // TODO: implement this
+    const { channel4Contract, otherAccount1, domain, types } =
+      await loadFixture(prepareEIP712LitigateContentFixture);
+    const content = {
+      title: 'Google',
+      url: 'https://google.com/',
+      submittedBy: otherAccount1.address,
+      likes: 0,
+      tagIds: [FIRST_TAG, SECOND_TAG],
+    };
+    const EIPSignature = await otherAccount1.signTypedData(
+      domain,
+      types,
+      content,
+    );
+
+    await expect(
+      channel4Contract
+        .connect(otherAccount1)
+        .litigateContent(content, EIPSignature),
+    ).to.be.revertedWith('Invalid signature');
   });
 
   it('Should add a missing tag', async function () {
