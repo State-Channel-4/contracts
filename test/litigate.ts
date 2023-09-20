@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import {
+  likeContentFixture,
   prepareEIP712LitigateContentFixture,
   prepareEIP712LitigateLikeFixture,
   prepareEIP712LitigateTagFixture,
@@ -240,5 +241,47 @@ describe('Litigate', async function () {
     await expect(
       channel4Contract.connect(otherAccount1).litigateLike(like, EIPSignature),
     ).to.be.revertedWith('Invalid signature');
+  });
+
+  it('Should update the number of likes and slash backend if number of likes do not match', async function () {
+    const { channel4Contract, contentObj, otherAccount1, backendWallet } =
+      await loadFixture(likeContentFixture);
+    // sync incorrect number of likes
+    const content = {
+      title: contentObj.title,
+      url: contentObj.url,
+      submittedBy: contentObj.submittedBy,
+      likes: 4,
+      tagIds: contentObj.tags,
+    };
+    await channel4Contract
+      .connect(backendWallet)
+      .syncState([], [], [content], []);
+    // run litigate number of likes
+    const backendVaultBefore = await channel4Contract.backendVault();
+    await channel4Contract
+      .connect(otherAccount1)
+      .litigateNumberOfLikes(contentObj.url);
+    const backendVaultAfter = await channel4Contract.backendVault();
+    const contentAfter = await channel4Contract.getContent(contentObj.url);
+
+    expect(Number(contentAfter.likes)).to.equal(1);
+    expect(backendVaultAfter).to.equal(backendVaultBefore - SLASHING_FEE);
+  });
+
+  it('Should prevent update of number of likes of a specific content if it does match', async function () {
+    const { channel4Contract, contentObj, otherAccount1 } =
+      await loadFixture(likeContentFixture);
+
+    const backendVaultBefore = await channel4Contract.backendVault();
+    const contentBefore = await channel4Contract.getContent(contentObj.url);
+    await channel4Contract
+      .connect(otherAccount1)
+      .litigateNumberOfLikes(contentObj.url);
+    const contentAfter = await channel4Contract.getContent(contentObj.url);
+    const backendVaultAfter = await channel4Contract.backendVault();
+
+    expect(contentAfter.likes).to.equal(contentBefore.likes);
+    expect(backendVaultAfter).to.equal(backendVaultBefore);
   });
 });
