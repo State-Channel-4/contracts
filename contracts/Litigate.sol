@@ -11,7 +11,7 @@ import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
 
     bytes32 private constant CONTENT_TO_ADD_TYPE =
-    keccak256("ContentToAdd(string title,string url,address submittedBy,uint256 likes,string[] tagIds)");
+    keccak256("ContentToLitigate(string title,string url,address submittedBy,uint256 likes,string[] tagIds,uint256 timestamp)");
 
     bytes32 private constant TAG_TO_SYNC_TYPE =
     keccak256("TagToSync(string name,address createdBy)");
@@ -30,7 +30,11 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
     /// @dev For EIP-712 in Solidity check https://gist.github.com/markodayan/e05f524b915f129c4f8500df816a369b
     /// @param content Content message
     /// @param signature EIP-712 signature
-    function verifyMetaTxContent(ContentToAdd calldata content, bytes calldata signature) public view returns (bool) {
+    function verifyMetaTxContent(ContentToLitigate calldata content, bytes calldata signature) public view returns (bool) {
+        // check that some time has passed since content was created
+        if (block.timestamp + 5000 < content.timestamp){
+            return false;
+        }
         bytes32[] memory encodedTagIds = new bytes32[](content.tagIds.length);
         for (uint256 i = 0; i < content.tagIds.length; i++) {
             encodedTagIds[i] = keccak256(bytes(content.tagIds[i]));
@@ -42,7 +46,8 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
             keccak256(bytes(content.url)),
             content.submittedBy,
             content.likes,
-            keccak256(abi.encodePacked( encodedTagIds ))
+            keccak256(abi.encodePacked( encodedTagIds )),
+            content.timestamp
         )));
         address signer = ECDSA.recover(digest, signature);
         return signer == backendAddress;
@@ -82,7 +87,7 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
     /// @param content Content to litigate
     /// @param signature EIP-712 signature
     function litigateContent(
-        ContentToAdd calldata content,
+        ContentToLitigate calldata content,
         bytes calldata signature
     ) public returns (bool) {
         require( verifyMetaTxContent(content, signature), "Invalid signature");

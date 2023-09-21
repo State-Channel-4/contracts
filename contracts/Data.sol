@@ -28,12 +28,13 @@ abstract contract Data {
         bool liked;
     }
 
-    struct ContentToAdd {
+    struct ContentToLitigate {
         string title;
         string url;
         address submittedBy;
         uint256 likes;
         string[] tagIds;
+        uint256 timestamp;
     }
 
     struct ContentToSync {

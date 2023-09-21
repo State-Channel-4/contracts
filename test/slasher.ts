@@ -77,6 +77,7 @@ describe('Slasher', async function () {
         submittedBy: otherAccount1.address,
         likes: 0,
         tagIds: ['something'],
+        timestamp: Math.floor(Date.now() / 1000),
       };
       const EIPSignature = await backendWallet.signTypedData(
         domain,

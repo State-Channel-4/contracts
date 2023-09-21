@@ -6,8 +6,14 @@ import {
   prepareEIP712LitigateLikeFixture,
   prepareEIP712LitigateTagFixture,
 } from './fixtures';
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
-import { FIRST_TAG, SECOND_TAG, SLASHING_FEE } from '../constants';
+import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
+import {
+  FIRST_TAG,
+  SECOND_TAG,
+  SECOND_TITLE,
+  SECOND_URL,
+  SLASHING_FEE,
+} from '../constants';
 
 describe('Litigate', async function () {
   it('Should add a missing content', async function () {
@@ -19,6 +25,7 @@ describe('Litigate', async function () {
       submittedBy: otherAccount1.address,
       likes: 0,
       tagIds: ['superhero'],
+      timestamp: Math.floor(Date.now() / 1000),
     };
     const EIPSignature = await backendWallet.signTypedData(
       domain,
@@ -32,6 +39,7 @@ describe('Litigate', async function () {
     );
     const backendVaultBefore = await channel4Contract.backendVault();
 
+    await time.increase(35);
     await channel4Contract
       .connect(otherAccount1)
       .litigateContent(content, EIPSignature);
@@ -67,11 +75,12 @@ describe('Litigate', async function () {
     const { channel4Contract, otherAccount1, domain, types, backendWallet } =
       await loadFixture(prepareEIP712LitigateContentFixture);
     const content = {
-      title: 'Google',
-      url: 'https://google.com/',
+      title: SECOND_TITLE,
+      url: SECOND_URL,
       submittedBy: otherAccount1.address,
       likes: 0,
       tagIds: [FIRST_TAG, SECOND_TAG],
+      timestamp: Math.floor(Date.now() / 1000),
     };
     const EIPSignature = await backendWallet.signTypedData(
       domain,
@@ -80,6 +89,7 @@ describe('Litigate', async function () {
     );
 
     const allContentBefore = await channel4Contract.getAllContent();
+    await time.increase(35);
     await channel4Contract
       .connect(otherAccount1)
       .litigateContent(content, EIPSignature);
@@ -91,11 +101,12 @@ describe('Litigate', async function () {
     const { channel4Contract, otherAccount1, domain, types } =
       await loadFixture(prepareEIP712LitigateContentFixture);
     const content = {
-      title: 'Google',
-      url: 'https://google.com/',
+      title: SECOND_TITLE,
+      url: SECOND_URL,
       submittedBy: otherAccount1.address,
       likes: 0,
       tagIds: [FIRST_TAG, SECOND_TAG],
+      timestamp: Math.floor(Date.now() / 1000),
     };
     const EIPSignature = await otherAccount1.signTypedData(
       domain,
@@ -103,6 +114,35 @@ describe('Litigate', async function () {
       content,
     );
 
+    await time.increase(35);
+    await expect(
+      channel4Contract
+        .connect(otherAccount1)
+        .litigateContent(content, EIPSignature),
+    ).to.be.revertedWith('Invalid signature');
+  });
+
+  it('Should prevent content litigation before time threshold', async function () {
+    const { channel4Contract, otherAccount1, domain, types, backendWallet } =
+      await loadFixture(prepareEIP712LitigateContentFixture);
+    const content = {
+      title: SECOND_TITLE,
+      url: SECOND_URL,
+      submittedBy: otherAccount1.address,
+      likes: 0,
+      tagIds: [FIRST_TAG, SECOND_TAG],
+      timestamp: Math.floor(Date.now() / 1000),
+    };
+    const EIPSignature = await backendWallet.signTypedData(
+      domain,
+      types,
+      content,
+    );
+    // TODO: this is not being reverted
+    console.log(content.timestamp);
+    console.log(await time.latest());
+
+    await time.increase(10);
     await expect(
       channel4Contract
         .connect(otherAccount1)

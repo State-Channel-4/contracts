@@ -115,12 +115,13 @@ export async function prepareEIP712LitigateContentFixture() {
     verifyingContract: EIP712Domain.verifyingContract,
   };
   const types = {
-    ContentToAdd: [
+    ContentToLitigate: [
       { name: 'title', type: 'string' },
       { name: 'url', type: 'string' },
       { name: 'submittedBy', type: 'address' },
       { name: 'likes', type: 'uint256' },
       { name: 'tagIds', type: 'string[]' },
+      { name: 'timestamp', type: 'uint256' },
     ],
   };
   return {
