@@ -204,10 +204,14 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
     /// @notice litigate the number of likes of a specific content
     /// @param url Content to litigate
     function litigateNumberOfLikes(string calldata url) public returns (bool) {
-        // check if content exists
         uint256 contentIndex = contents.ids[url];
-        if (contentIndex == 0){
-            return false;
+        // check that it is not the first content
+        Content storage firstContent = contents.list[0];
+        if (keccak256(bytes(firstContent.url)) != keccak256(bytes(url))){
+            // check if content exists
+            if (contentIndex == 0){
+                return false;
+            }
         }
         // get contentIndex and check if it exists
         Content storage content = contents.list[contentIndex];
