@@ -9,7 +9,7 @@ import {
   FIRST_URL,
   TAGS_TO_ADD,
   USERS_TO_ADD,
-  USER_PUBLIC_ADDRESS
+  USER_PUBLIC_ADDRESS,
 } from '../constants';
 
 describe('Sync', async function () {
@@ -107,7 +107,9 @@ describe('Sync', async function () {
 
   it('Should succesfully load a bunch of likes to the contract state', async function () {
     // load deployed contract fixture
-    const { channel4Contract, backendWallet } = await loadFixture(deployContractFixture);
+    const { channel4Contract, backendWallet } = await loadFixture(
+      deployContractFixture,
+    );
 
     // load accounts for test
     const [deployer, alice, bob] = await ethers.getSigners();
@@ -116,8 +118,18 @@ describe('Sync', async function () {
 
     // build likes
     const pendingActions = [
-      { submittedBy: usersToAdd[0], url: CONTENT_TO_ADD[0].url },
-      { submittedBy: usersToAdd[1], url: CONTENT_TO_ADD[0].url },
+      {
+        submittedBy: usersToAdd[0],
+        url: CONTENT_TO_ADD[0].url,
+        liked: true,
+        nonce: 1,
+      },
+      {
+        submittedBy: usersToAdd[1],
+        url: CONTENT_TO_ADD[0].url,
+        liked: true,
+        nonce: 1,
+      },
     ];
 
     // sync state
@@ -126,13 +138,15 @@ describe('Sync', async function () {
       .syncState(usersToAdd, TAGS_TO_ADD, CONTENT_TO_ADD, pendingActions);
 
     // check for existence of users with expected likes
-    const expectedLikes = [0, 1, 1, 0]
+    const expectedLikes = [0, 1, 1, 0];
     const contractUsers = await channel4Contract.getAllUsers();
     for (let i = 0; i < contractUsers.length; i++) {
       // check for expected address
       expect(contractUsers[i].userAddress).to.equal(allUsers[i]);
       // check for expected like #
-      expect(Number(contractUsers[i].numberOfLikedContent)).to.equal(expectedLikes[i]);
+      expect(Number(contractUsers[i].numberOfLikedContent)).to.equal(
+        expectedLikes[i],
+      );
     }
   });
 });

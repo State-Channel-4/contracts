@@ -23,12 +23,32 @@ abstract contract Data {
         uint256[] submittedContent;
     }
 
-    struct ContentToAdd {
+    struct Like {
+        uint256 nonce;
+        bool liked;
+    }
+
+    struct ContentToLitigate {
         string title;
         string url;
         address submittedBy;
         uint256 likes;
         string[] tagIds;
+        uint256 timestamp;
+    }
+
+    struct TagToLitigate {
+        string name;
+        address createdBy;
+        uint256 timestamp;
+    }
+
+    struct PendingToLitigate {
+        address submittedBy;
+        string url;
+        bool liked;
+        uint256 nonce;
+        uint256 timestamp;
     }
 
     struct ContentToSync {
@@ -38,20 +58,16 @@ abstract contract Data {
         string[] tagIds;
     }
 
-    struct TagToAdd {
-        string name;
-        address createdBy;
-        string[] contentIds;
-    }
-
     struct TagToSync {
         string name;
         address createdBy;
     }
 
-    struct LikeToVerify {
-        string title;
-        address likedBy;
+    struct Pending {
+        address submittedBy;
+        string url;
+        bool liked;
+        uint256 nonce;
     }
 
     struct Contents {
@@ -67,12 +83,7 @@ abstract contract Data {
     struct Users {
         User[] list;
         mapping (address => uint256) ids;
-        mapping (address => mapping (uint256 => bool)) likedContent;
-    }
-
-    struct Pending {
-        address submittedBy;
-        string url;
+        mapping (address => mapping (uint256 => Like)) likedContent;
     }
 
     Contents contents;
@@ -179,7 +190,7 @@ abstract contract Data {
         uint256 resultIndex = 0;
         Content [] memory result = new Content[](users.list[userIndex].numberOfLikedContent);
         for (uint256 i = 0; i < contents.list.length; i++) {
-            if (users.likedContent[userAddress][i] == true){
+            if (users.likedContent[userAddress][i].liked == true){
                 result[resultIndex] = contents.list[i];
                 resultIndex++;
             }

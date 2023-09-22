@@ -9,6 +9,7 @@ import {
   SECOND_TITLE,
   SECOND_URL,
   SLASHING_FEE,
+  TIME_THRESHOLD,
 } from '../constants';
 import {
   loadFixture,
@@ -29,6 +30,7 @@ export async function deployContractFixture() {
     FIRST_TAG,
     SLASHING_FEE,
     BACKEND_REGISTRATION_FEE,
+    TIME_THRESHOLD,
   );
 
   const backendWallet = new ethers.Wallet(BACKEND_PRIVATE_KEY, ethers.provider);
@@ -89,9 +91,10 @@ export async function likeContentFixture() {
     contentObj,
     backendWallet,
   } = await loadFixture(createContentIfNotExistsFixture);
+  const nonce = 1;
   await channel4Contract
     .connect(backendWallet)
-    .toggleLike(contentObj.url, otherAccount1.address);
+    .toggleLike(contentObj.url, true, nonce, otherAccount1.address);
   return {
     channel4Contract,
     deployer,
@@ -99,6 +102,7 @@ export async function likeContentFixture() {
     otherAccount2,
     contentObj,
     backendWallet,
+    nonce,
   };
 }
 
@@ -113,12 +117,67 @@ export async function prepareEIP712LitigateContentFixture() {
     verifyingContract: EIP712Domain.verifyingContract,
   };
   const types = {
-    ContentToAdd: [
+    ContentToLitigate: [
       { name: 'title', type: 'string' },
       { name: 'url', type: 'string' },
       { name: 'submittedBy', type: 'address' },
       { name: 'likes', type: 'uint256' },
       { name: 'tagIds', type: 'string[]' },
+      { name: 'timestamp', type: 'uint256' },
+    ],
+  };
+  return {
+    channel4Contract,
+    otherAccount1,
+    otherAccount2,
+    domain,
+    types,
+    backendWallet,
+  };
+}
+
+export async function prepareEIP712LitigateTagFixture() {
+  const { channel4Contract, otherAccount1, otherAccount2, backendWallet } =
+    await loadFixture(createContentIfNotExistsFixture);
+  const EIP712Domain = await channel4Contract.eip712Domain();
+  const domain = {
+    name: EIP712Domain.name,
+    version: EIP712Domain.version,
+    chainId: EIP712Domain.chainId,
+    verifyingContract: EIP712Domain.verifyingContract,
+  };
+  const types = {
+    TagToSync: [
+      { name: 'name', type: 'string' },
+      { name: 'createdBy', type: 'address' },
+    ],
+  };
+  return {
+    channel4Contract,
+    otherAccount1,
+    otherAccount2,
+    domain,
+    types,
+    backendWallet,
+  };
+}
+
+export async function prepareEIP712LitigateLikeFixture() {
+  const { channel4Contract, otherAccount1, otherAccount2, backendWallet } =
+    await loadFixture(likeContentFixture);
+  const EIP712Domain = await channel4Contract.eip712Domain();
+  const domain = {
+    name: EIP712Domain.name,
+    version: EIP712Domain.version,
+    chainId: EIP712Domain.chainId,
+    verifyingContract: EIP712Domain.verifyingContract,
+  };
+  const types = {
+    Pending: [
+      { name: 'submittedBy', type: 'address' },
+      { name: 'url', type: 'string' },
+      { name: 'liked', type: 'bool' },
+      { name: 'nonce', type: 'uint256' },
     ],
   };
   return {
