@@ -13,12 +13,13 @@ contract Channel4Contract is Data, Create, Interact, Litigate {
         string memory url,
         string memory tag,
         uint256 slashingFee,
-        uint256 backendRegistrationFee
+        uint256 backendRegistrationFee,
+        uint256 timeThreshold
     )
     Data(title, url, tag)
     Create()
     Interact()
-    Litigate(slashingFee, backendRegistrationFee)
+    Litigate(slashingFee, backendRegistrationFee, timeThreshold)
     {}
 
     /// @notice Sync Content state with the backend. Only Content, Tag and User elements that have been updated

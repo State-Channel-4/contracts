@@ -10,6 +10,8 @@ export const BACKEND_REGISTRATION_FEE = ethers.parseEther('0.01');
 export const SLASHING_FEE = ethers.parseEther('0.001');
 export const VALUE_TO_RECHARGE = ethers.parseEther('0.01');
 
+export const TIME_THRESHOLD = BigInt(30);
+
 export const FIRST_TITLE = 'Privacy & Scaling Explorations';
 export const FIRST_URL = 'https://pse.dev/';
 export const FIRST_TAG = 'zero-knowledge';

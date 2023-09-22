@@ -37,6 +37,20 @@ abstract contract Data {
         uint256 timestamp;
     }
 
+    struct TagToLitigate {
+        string name;
+        address createdBy;
+        uint256 timestamp;
+    }
+
+    struct PendingToLitigate {
+        address submittedBy;
+        string url;
+        bool liked;
+        uint256 nonce;
+        uint256 timestamp;
+    }
+
     struct ContentToSync {
         string title;
         string url;
@@ -47,6 +61,13 @@ abstract contract Data {
     struct TagToSync {
         string name;
         address createdBy;
+    }
+
+    struct Pending {
+        address submittedBy;
+        string url;
+        bool liked;
+        uint256 nonce;
     }
 
     struct Contents {
@@ -63,13 +84,6 @@ abstract contract Data {
         User[] list;
         mapping (address => uint256) ids;
         mapping (address => mapping (uint256 => Like)) likedContent;
-    }
-
-    struct Pending {
-        address submittedBy;
-        string url;
-        bool liked;
-        uint256 nonce;
     }
 
     Contents contents;

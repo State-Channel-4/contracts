@@ -4,10 +4,11 @@ import {
   deployContractFixture,
   prepareEIP712LitigateContentFixture,
 } from './fixtures';
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
+import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
 import {
   BACKEND_PRIVATE_KEY,
   BACKEND_REGISTRATION_FEE,
+  TIME_THRESHOLD,
   VALUE_TO_RECHARGE,
 } from '../constants';
 
@@ -84,6 +85,7 @@ describe('Slasher', async function () {
         types,
         content,
       );
+      await time.increase(TIME_THRESHOLD + BigInt(5));
       await channel4Contract.litigateContent(content, EIPSignature);
     }
 

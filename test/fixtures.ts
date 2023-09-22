@@ -9,6 +9,7 @@ import {
   SECOND_TITLE,
   SECOND_URL,
   SLASHING_FEE,
+  TIME_THRESHOLD,
 } from '../constants';
 import {
   loadFixture,
@@ -29,6 +30,7 @@ export async function deployContractFixture() {
     FIRST_TAG,
     SLASHING_FEE,
     BACKEND_REGISTRATION_FEE,
+    TIME_THRESHOLD,
   );
 
   const backendWallet = new ethers.Wallet(BACKEND_PRIVATE_KEY, ethers.provider);

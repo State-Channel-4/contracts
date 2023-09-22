@@ -13,6 +13,7 @@ import {
   SECOND_TITLE,
   SECOND_URL,
   SLASHING_FEE,
+  TIME_THRESHOLD,
 } from '../constants';
 
 describe('Litigate', async function () {
@@ -39,7 +40,7 @@ describe('Litigate', async function () {
     );
     const backendVaultBefore = await channel4Contract.backendVault();
 
-    await time.increase(35);
+    await time.increase(TIME_THRESHOLD + BigInt(5));
     await channel4Contract
       .connect(otherAccount1)
       .litigateContent(content, EIPSignature);
@@ -89,7 +90,7 @@ describe('Litigate', async function () {
     );
 
     const allContentBefore = await channel4Contract.getAllContent();
-    await time.increase(35);
+    await time.increase(TIME_THRESHOLD + BigInt(5));
     await channel4Contract
       .connect(otherAccount1)
       .litigateContent(content, EIPSignature);
@@ -114,7 +115,7 @@ describe('Litigate', async function () {
       content,
     );
 
-    await time.increase(35);
+    await time.increase(TIME_THRESHOLD + BigInt(5));
     await expect(
       channel4Contract
         .connect(otherAccount1)
@@ -138,16 +139,13 @@ describe('Litigate', async function () {
       types,
       content,
     );
-    // TODO: this is not being reverted
-    console.log(content.timestamp);
-    console.log(await time.latest());
 
-    await time.increase(10);
+    await time.increase(BigInt(1));
     await expect(
       channel4Contract
         .connect(otherAccount1)
         .litigateContent(content, EIPSignature),
-    ).to.be.revertedWith('Invalid signature');
+    ).to.be.revertedWith('Time threshold has not passed yet');
   });
 
   it('Should add a missing tag', async function () {
@@ -156,6 +154,7 @@ describe('Litigate', async function () {
     const tag = {
       name: 'science',
       createdBy: otherAccount1.address,
+      timestamp: Math.floor(Date.now() / 1000),
     };
     const EIPSignature = await backendWallet.signTypedData(domain, types, tag);
 
@@ -165,6 +164,7 @@ describe('Litigate', async function () {
       await channel4Contract.getAddress(),
     );
 
+    await time.increase(TIME_THRESHOLD + BigInt(5));
     await channel4Contract
       .connect(otherAccount1)
       .litigateTag(tag, EIPSignature);
@@ -191,10 +191,12 @@ describe('Litigate', async function () {
     const tag = {
       name: SECOND_TAG,
       createdBy: otherAccount1.address,
+      timestamp: Math.floor(Date.now() / 1000),
     };
     const EIPSignature = await backendWallet.signTypedData(domain, types, tag);
 
     const allTagsBefore = await channel4Contract.getAllTags();
+    await time.increase(TIME_THRESHOLD + BigInt(5));
     await channel4Contract
       .connect(otherAccount1)
       .litigateTag(tag, EIPSignature);
@@ -208,12 +210,28 @@ describe('Litigate', async function () {
     const tag = {
       name: 'science',
       createdBy: otherAccount1.address, // check createContentIfNotExistsFixture
+      timestamp: Math.floor(Date.now() / 1000),
     };
     const EIPSignature = await otherAccount1.signTypedData(domain, types, tag);
-
+    await time.increase(TIME_THRESHOLD + BigInt(5));
     await expect(
       channel4Contract.connect(otherAccount1).litigateTag(tag, EIPSignature),
     ).to.be.revertedWith('Invalid signature');
+  });
+
+  it('Should prevent tag litigation before time threshold', async function () {
+    const { channel4Contract, otherAccount1, domain, types } =
+      await loadFixture(prepareEIP712LitigateTagFixture);
+    const tag = {
+      name: 'science',
+      createdBy: otherAccount1.address, // check createContentIfNotExistsFixture
+      timestamp: Math.floor(Date.now() / 1000),
+    };
+    const EIPSignature = await otherAccount1.signTypedData(domain, types, tag);
+    await time.increase(BigInt(1));
+    await expect(
+      channel4Contract.connect(otherAccount1).litigateTag(tag, EIPSignature),
+    ).to.be.revertedWith('Time threshold has not passed yet');
   });
 
   it('Should add missing likes', async function () {
@@ -224,6 +242,7 @@ describe('Litigate', async function () {
       url: 'https://google.com/',
       liked: true,
       nonce: 2, // this is 2nd time the content is given a like. 1st was the backend wallet
+      timestamp: Math.floor(Date.now() / 1000),
     };
     const EIPSignature = await backendWallet.signTypedData(domain, types, like);
 
@@ -232,6 +251,7 @@ describe('Litigate', async function () {
     const contractBalanceBefore = await ethers.provider.getBalance(
       await channel4Contract.getAddress(),
     );
+    await time.increase(TIME_THRESHOLD + BigInt(5));
     await channel4Contract
       .connect(otherAccount1)
       .litigateLike(like, EIPSignature);
@@ -257,10 +277,12 @@ describe('Litigate', async function () {
       url: 'https://google.com/',
       liked: true,
       nonce: 1, // this is 2nd time the content is given a like. 1st was the backend wallet
+      timestamp: Math.floor(Date.now() / 1000),
     };
     const EIPSignature = await backendWallet.signTypedData(domain, types, like);
 
     const contentBefore = await channel4Contract.getContent(like.url);
+    await time.increase(TIME_THRESHOLD + BigInt(5));
     await channel4Contract
       .connect(otherAccount1)
       .litigateLike(like, EIPSignature);
@@ -276,11 +298,30 @@ describe('Litigate', async function () {
       url: 'https://google.com/',
       liked: true,
       nonce: 2, // this is 2nd time the content is given a like. 1st was the backend wallet
+      timestamp: Math.floor(Date.now() / 1000),
     };
     const EIPSignature = await otherAccount1.signTypedData(domain, types, like);
+    await time.increase(TIME_THRESHOLD + BigInt(5));
     await expect(
       channel4Contract.connect(otherAccount1).litigateLike(like, EIPSignature),
     ).to.be.revertedWith('Invalid signature');
+  });
+
+  it('Should prevent like litigation before time threshold', async function () {
+    const { channel4Contract, otherAccount1, domain, types } =
+      await loadFixture(prepareEIP712LitigateLikeFixture);
+    const like = {
+      submittedBy: otherAccount1.address,
+      url: 'https://google.com/',
+      liked: true,
+      nonce: 2, // this is 2nd time the content is given a like. 1st was the backend wallet
+      timestamp: Math.floor(Date.now() / 1000),
+    };
+    const EIPSignature = await otherAccount1.signTypedData(domain, types, like);
+    await time.increase(BigInt(1));
+    await expect(
+      channel4Contract.connect(otherAccount1).litigateLike(like, EIPSignature),
+    ).to.be.revertedWith('Time threshold has not passed yet');
   });
 
   it('Should update the number of likes and slash backend if number of likes do not match', async function () {
