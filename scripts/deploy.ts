@@ -1,14 +1,53 @@
-import { ethers } from "hardhat";
-import { firstTag } from "../constants";
-
+import { ethers } from 'hardhat';
+import {
+  BACKEND_PRIVATE_KEY,
+  BACKEND_REGISTRATION_FEE,
+  FIRST_TAG,
+  FIRST_TITLE,
+  FIRST_URL,
+  SLASHING_FEE,
+  TIME_THRESHOLD,
+} from '../constants';
 async function main() {
+  const network = await ethers.provider.getNetwork();
+  console.log(`====================================`);
+  console.log(`Deploying Channel4Contract to ${network.name} (${network.chainId})...`)
+  
+  // deploy contract
+  const Channel4Contract = await ethers.getContractFactory('Channel4Contract');
+  const channel4Contract = await Channel4Contract.deploy(
+    FIRST_TITLE,
+    FIRST_URL,
+    FIRST_TAG,
+    SLASHING_FEE,
+    BACKEND_REGISTRATION_FEE,
+    TIME_THRESHOLD,
+  );
+  await channel4Contract.waitForDeployment();
 
-  const UrlContract = await ethers.getContractFactory("UrlContract");
-  const urlContract = await UrlContract.deploy(firstTag);
+  // log deployment info
+  console.log(`====================================`);
+  console.log(`Channel4Contract deployed to '${await channel4Contract.getAddress()}'`);
+  console.log(`Deployment parameters: `);
+  console.log(` - First URL Title: "${FIRST_TITLE}"`);
+  console.log(` - First URL: "${FIRST_URL}"`);
+  console.log(` - First Tag: "${FIRST_TAG}"`);
+  console.log(` - Slashing Fee: ${ethers.formatEther(SLASHING_FEE)} ether`);
+  console.log(` - Backend Registration Fee: ${ethers.formatEther(BACKEND_REGISTRATION_FEE)} ether`);
+  console.log(` - Time Threshold: ${TIME_THRESHOLD} seconds`);
+  console.log(`====================================`);
 
-  await urlContract.deployed();
+  // register deployer as backend
+  const [deployer] = await ethers.getSigners();
+  let tx = await channel4Contract.connect(deployer).registerBackend({
+    value: BACKEND_REGISTRATION_FEE,
+  });
+  await tx.wait();
+  console.log(`Registerd contract deployer ${deployer.address} as backend`);
+  console.log(`====================================`);
 
-  console.log(`UrlContract deployed to ${urlContract.address} with first tag ${firstTag}`);
+
+  // @todo: etherscan verification
 }
 
 // We recommend this pattern to be able to use async/await everywhere
