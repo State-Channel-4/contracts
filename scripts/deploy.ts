@@ -6,6 +6,7 @@ import {
   FIRST_TITLE,
   FIRST_URL,
   SLASHING_FEE,
+  TIME_THRESHOLD,
 } from '../constants';
 async function main() {
   const network = await ethers.provider.getNetwork();
@@ -20,6 +21,7 @@ async function main() {
     FIRST_TAG,
     SLASHING_FEE,
     BACKEND_REGISTRATION_FEE,
+    TIME_THRESHOLD,
   );
   await channel4Contract.waitForDeployment();
 
@@ -32,6 +34,7 @@ async function main() {
   console.log(` - First Tag: "${FIRST_TAG}"`);
   console.log(` - Slashing Fee: ${ethers.formatEther(SLASHING_FEE)} ether`);
   console.log(` - Backend Registration Fee: ${ethers.formatEther(BACKEND_REGISTRATION_FEE)} ether`);
+  console.log(` - Time Threshold: ${TIME_THRESHOLD} seconds`);
   console.log(`====================================`);
 
   // register deployer as backend
