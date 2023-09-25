@@ -52,7 +52,7 @@ contract Channel4Contract is Data, Create, Interact, Litigate {
             );
         }
         for (uint i = 0; i < pendingActions.length; i++) {
-            toggleLike(
+            _toggleLike(
                 pendingActions[i].url,
                 pendingActions[i].liked,
                 pendingActions[i].nonce,
