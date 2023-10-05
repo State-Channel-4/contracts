@@ -22,6 +22,7 @@ abstract contract Data {
         uint256 numberOfLikedContent;
         uint256[] submittedContent;
         uint256 registeredAt;
+        uint256 numberOfLikesInPeriod;
     }
 
     struct Like {
@@ -108,7 +109,7 @@ abstract contract Data {
         contents.list.push(firstContent);
         contents.list[0].tagIds.push(0);
 
-        User memory newUser = User(msgSender, 0, new uint256[](0), block.timestamp);
+        User memory newUser = User(msgSender, 0, new uint256[](0), block.timestamp, 0);
         users.list.push(newUser);
         users.list[0].submittedContent.push(0);
         users.ids[msgSender] = 0;

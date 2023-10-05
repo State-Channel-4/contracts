@@ -93,7 +93,15 @@ describe('Create', async function () {
       .connect(backendWallet)
       .createUserIfNotExists(otherAccount1.address);
     const allUsers = await channel4Contract.getAllUsers();
+    const timestamp = await time.latest();
+    const user = allUsers[1];
+
     expect(allUsers.length).to.equal(2);
+    expect(user.userAddress).to.equal(otherAccount1.address);
+    expect(Number(user.numberOfLikedContent)).to.equal(0);
+    expect(user.submittedContent.length).to.equal(0);
+    expect(Number(user.registeredAt)).to.equal(timestamp);
+    expect(Number(user.numberOfLikesInPeriod)).to.equal(0);
   });
 
   it('Should not add user if it exists', async function () {
@@ -105,19 +113,5 @@ describe('Create', async function () {
       .createUserIfNotExists(deployer.address);
     const allUsers = await channel4Contract.getAllUsers();
     expect(allUsers.length).to.equal(1);
-  });
-
-  it('Should register the user creation timestamp', async function () {
-    const deployTime = await time.latest();
-    const { channel4Contract, otherAccount1, backendWallet } =
-      await loadFixture(deployContractFixture);
-    await channel4Contract
-      .connect(backendWallet)
-      .createUserIfNotExists(otherAccount1.address);
-    const allUsers = await channel4Contract.getAllUsers();
-    const timestamp = await time.latest();
-
-    expect(Number(allUsers[0].registeredAt)).to.be.approximately(deployTime, 3);
-    expect(Number(allUsers[1].registeredAt)).to.equal(timestamp);
   });
 });
