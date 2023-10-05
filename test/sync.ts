@@ -144,9 +144,7 @@ describe('Sync', async function () {
       // check for expected address
       expect(contractUsers[i].userAddress).to.equal(allUsers[i]);
       // check for expected like #
-      expect(Number(contractUsers[i].numberOfLikedContent)).to.equal(
-        expectedLikes[i],
-      );
+      expect(Number(contractUsers[i].numberOfLikes)).to.equal(expectedLikes[i]);
     }
   });
 });
