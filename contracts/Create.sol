@@ -21,7 +21,8 @@ abstract contract Create is Data, OnlyBackend {
         string[] calldata _tags
     ) internal returns (uint256) {
         require(bytes(title).length > 0 && bytes(url).length > 0 && _tags.length > 0, "Invalid input");
-        uint256 userIndex = _createUserIfNotExists(submittedBy);
+        uint256 userIndex = users.ids[submittedBy];
+
         // If tx fails then changes rollback. We can be sure content index in the beginning = content index in the end
         uint256 contentIndex = contents.list.length;
         // get tag indexes or create new tags. Also add content index to each tag
@@ -102,32 +103,34 @@ abstract contract Create is Data, OnlyBackend {
     /// @notice Get a user id from array or add a new user if it doesn't exist
     /// @dev It is used inside createContentIfNotExists but it should be available to be called alone
     /// @dev This function can only be called by the contract or its dependencies
-    /// @param userAddress User address
+    /// @param user User object
     function _createUserIfNotExists(
-        address userAddress
+        User calldata user
     ) internal returns (uint256){
         // check if content is the first one in the array
         address firstUserAddress = users.list[0].userAddress;
-        if (userAddress == firstUserAddress){
+        if (user.userAddress == firstUserAddress){
+            users.list[0] = user;
             return 0;
         }
         // check if user is already registered
-        uint256 index = users.ids[userAddress];
+        uint256 index = users.ids[user.userAddress];
         if (index == 0){
             // add new user to array
-            User memory newUser = User(userAddress, 0, new uint256[](0), block.timestamp, 0);
+            User memory newUser = User(user.userAddress, 0, new uint256[](0), block.timestamp, 0);
             users.list.push(newUser);
             uint256 newIndex = users.list.length - 1;
-            users.ids[userAddress] = newIndex;
+            users.ids[user.userAddress] = newIndex;
             return newIndex;
         }
+        users.list[index] = user;
         return index;
     }
     /// @notice wrapper for createContentIfNotExists
     /// @dev this function can only be called by the backend
     function createUserIfNotExists(
-        address userAddress
+        User calldata user
     ) public onlyBackend returns (uint256) {
-        return _createUserIfNotExists(userAddress);
+        return _createUserIfNotExists(user);
     }
 }

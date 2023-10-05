@@ -56,6 +56,13 @@ export async function createContentIfNotExistsFixture() {
     otherAccount2,
     backendWallet,
   } = await loadFixture(deployContractFixture);
+  await channel4Contract.connect(backendWallet).createUserIfNotExists({
+    userAddress: otherAccount1.address,
+    numberOfLikes: 0,
+    submittedContent: [],
+    registeredAt: 0,
+    numberOfLikesInPeriod: 0,
+  });
   const contentObj = {
     title: SECOND_TITLE,
     url: SECOND_URL,

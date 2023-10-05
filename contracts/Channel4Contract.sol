@@ -24,18 +24,18 @@ contract Channel4Contract is Data, Create, Interact, Litigate {
 
     /// @notice Sync Content state with the backend. Only Content, Tag and User elements that have been updated
     /// @dev It can be called only by the backend to sync the state of the URLs
-    /// @param usersToAdd - addresses of new users to enroll in the contract
+    /// @param usersToSync - users to enroll/update in the contract
     /// @param tagsToAdd - tags to add to the contract
     /// @param contentsToAdd - url contents to add to the contract
     /// @param pendingActions - pending like/unlike actions to facilitate
     function syncState(
-        address[] calldata usersToAdd,
+        User[] calldata usersToSync,
         TagToSync[] calldata tagsToAdd,
         ContentToSync[] calldata contentsToAdd,
         Pending[] calldata pendingActions
     ) public onlyBackend {
-        for (uint256 i = 0; i < usersToAdd.length; i++)
-            _createUserIfNotExists(usersToAdd[i]);
+        for (uint256 i = 0; i < usersToSync.length; i++)
+            _createUserIfNotExists(usersToSync[i]);
         for (uint256 i = 0; i < tagsToAdd.length; i++) {
             _createTagIfNotExists(
                 tagsToAdd[i].name,

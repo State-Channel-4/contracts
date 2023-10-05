@@ -20,7 +20,15 @@ export const SECOND_TITLE = 'Google';
 export const SECOND_URL = 'https://google.com/';
 export const SECOND_TAG = 'web-search';
 
-export const USERS_TO_ADD = [USER_PUBLIC_ADDRESS];
+export const USERS_TO_ADD = [
+  {
+    userAddress: USER_PUBLIC_ADDRESS,
+    numberOfLikes: 0,
+    submittedContent: [],
+    registeredAt: 0,
+    numberOfLikesInPeriod: 0,
+  },
+];
 export const TAGS_TO_ADD = [
   {
     name: 'music',

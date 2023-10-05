@@ -63,9 +63,13 @@ describe('Deploy', function () {
     ).to.be.revertedWith('Caller is not the backend');
 
     await expect(
-      channel4Contract
-        .connect(otherAccount1)
-        .createUserIfNotExists(otherAccount1.address),
+      channel4Contract.connect(otherAccount1).createUserIfNotExists({
+        userAddress: otherAccount1.address,
+        numberOfLikes: 0,
+        submittedContent: [],
+        registeredAt: 0,
+        numberOfLikesInPeriod: 0,
+      }),
     ).to.be.revertedWith('Caller is not the backend');
 
     await expect(
