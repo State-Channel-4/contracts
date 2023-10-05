@@ -3,7 +3,7 @@ import {
   createContentIfNotExistsFixture,
   deployContractFixture,
 } from './fixtures';
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
+import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
 import { FIRST_TAG, SECOND_TAG } from '../constants';
 
 describe('Create', async function () {
@@ -105,5 +105,19 @@ describe('Create', async function () {
       .createUserIfNotExists(deployer.address);
     const allUsers = await channel4Contract.getAllUsers();
     expect(allUsers.length).to.equal(1);
+  });
+
+  it('Should register the user creation timestamp', async function () {
+    const deployTime = await time.latest();
+    const { channel4Contract, otherAccount1, backendWallet } =
+      await loadFixture(deployContractFixture);
+    await channel4Contract
+      .connect(backendWallet)
+      .createUserIfNotExists(otherAccount1.address);
+    const allUsers = await channel4Contract.getAllUsers();
+    const timestamp = await time.latest();
+
+    expect(Number(allUsers[0].registeredAt)).to.be.approximately(deployTime, 3);
+    expect(Number(allUsers[1].registeredAt)).to.equal(timestamp);
   });
 });
