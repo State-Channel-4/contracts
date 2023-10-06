@@ -120,6 +120,7 @@ describe('Sync', async function () {
       for (let j = 0, nj = contentInContract.length; j < nj; j++) {
         expect(Number(contentInContract[j])).to.equal(contentInBackend[j]);
       }
+      // it is a bit hard to check the registeredAt timestamp so we leave that one in /test/create.ts
       expect(Number(allUsersInContract[i].numberOfLikesInPeriod)).to.equal(
         allUsersInBackend[i].numberOfLikesInPeriod,
       );
