@@ -5,6 +5,9 @@ import {
   FIRST_TAG,
   FIRST_TITLE,
   FIRST_URL,
+  LIKES_IN_PERIOD_THRESHOLD,
+  REGISTRATION_THRESHOLD,
+  REWARDS_AMOUNT,
   SECOND_TAG,
   SECOND_TITLE,
   SECOND_URL,
@@ -24,14 +27,17 @@ export async function deployContractFixture() {
   const [deployer, otherAccount1, otherAccount2] = await ethers.getSigners();
 
   const Channel4Contract = await ethers.getContractFactory('Channel4Contract');
-  const channel4Contract = await Channel4Contract.deploy(
-    FIRST_TITLE,
-    FIRST_URL,
-    FIRST_TAG,
-    SLASHING_FEE,
-    BACKEND_REGISTRATION_FEE,
-    TIME_THRESHOLD,
-  );
+  const channel4Contract = await Channel4Contract.deploy({
+    title: FIRST_TITLE,
+    url: FIRST_URL,
+    tag: FIRST_TAG,
+    slashingFee: SLASHING_FEE,
+    backendRegistrationFee: BACKEND_REGISTRATION_FEE,
+    timeThreshold: TIME_THRESHOLD,
+    registrationThreshold: REGISTRATION_THRESHOLD,
+    likesInPeriodThreshold: LIKES_IN_PERIOD_THRESHOLD,
+    rewardsAmount: REWARDS_AMOUNT,
+  });
 
   const backendWallet = new ethers.Wallet(BACKEND_PRIVATE_KEY, ethers.provider);
   await setBalance(backendWallet.address, BACKEND_REGISTRATION_FEE * 3n);

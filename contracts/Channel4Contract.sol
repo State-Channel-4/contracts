@@ -4,22 +4,43 @@ pragma solidity ^0.8.9;
 import { Data } from "./Data.sol";
 import { Create } from "./Create.sol";
 import { Interact } from "./Interact.sol";
-
 import { Litigate } from "./Litigate.sol";
+import { Rewards } from "./Rewards.sol";
 
-contract Channel4Contract is Data, Create, Interact, Litigate {
+
+struct ConstructorObj {
+    string title;
+    string url;
+    string tag;
+    uint256 slashingFee;
+    uint256 backendRegistrationFee;
+    uint256 timeThreshold;
+    uint256 registrationThreshold;
+    uint256 likesInPeriodThreshold;
+    uint256 rewardsAmount;
+}
+
+contract Channel4Contract is Data, Create, Interact, Litigate, Rewards {
     constructor (
-        string memory title,
-        string memory url,
-        string memory tag,
-        uint256 slashingFee,
-        uint256 backendRegistrationFee,
-        uint256 timeThreshold
+        ConstructorObj memory constructorObj
     )
-    Data(title, url, tag)
+    Data(
+        constructorObj.title,
+        constructorObj.url,
+        constructorObj.tag
+    )
     Create()
     Interact()
-    Litigate(slashingFee, backendRegistrationFee, timeThreshold)
+    Litigate(
+        constructorObj.slashingFee,
+        constructorObj.backendRegistrationFee,
+        constructorObj.timeThreshold
+    )
+    Rewards(
+        constructorObj.registrationThreshold,
+        constructorObj.likesInPeriodThreshold,
+        constructorObj.rewardsAmount
+    )
     {}
 
     /// @notice Sync Content state with the backend. Only Content, Tag and User elements that have been updated
