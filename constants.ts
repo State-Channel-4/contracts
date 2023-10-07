@@ -13,8 +13,9 @@ export const VALUE_TO_RECHARGE = ethers.parseEther('0.01');
 export const TIME_THRESHOLD = BigInt(30);
 
 export const REGISTRATION_THRESHOLD = BigInt(60 * 60 * 24);
-export const LIKES_IN_PERIOD_THRESHOLD = BigInt(20);
+export const LIKES_IN_PERIOD_THRESHOLD = BigInt(3);
 export const REWARDS_AMOUNT = ethers.parseEther('0.0001');
+export const VALUE_TO_DONATE = ethers.parseEther('0.01');
 
 export const FIRST_TITLE = 'Privacy & Scaling Explorations';
 export const FIRST_URL = 'https://pse.dev/';

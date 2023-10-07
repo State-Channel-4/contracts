@@ -28,7 +28,6 @@ abstract contract Rewards is Data, OnlyBackend {
         require(rewardsVault > 0, "Rewards vault is empty");
         uint256 userIndex = users.ids[msg.sender];
         User memory user = users.list[userIndex];
-        require(user.numberOfLikes > 0, "User has no given likes");
         require(user.registeredAt > block.timestamp + REGISTRATION_THRESHOLD, "User is not registered");
         require(user.numberOfLikesInPeriod > LIKES_IN_PERIOD_THRESHOLD, "User has not enough likes in period");
         require(block.timestamp > lastMonth + 30 days, "It is not time to withdraw rewards yet");
@@ -47,8 +46,9 @@ abstract contract Rewards is Data, OnlyBackend {
 
     function withdrawRemainingRewards() public onlyBackend {
         require(rewardsVault > 0, "Rewards vault is empty");
+        uint256 valueToSend = rewardsVault;
         rewardsVault = 0;
-        (bool success, ) = backendAddress.call{ value: rewardsVault }("");
+        (bool success, ) = backendAddress.call{ value: valueToSend }("");
         require(success, "Transfer to backend failed.");
     }
 }
