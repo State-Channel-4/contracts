@@ -23,12 +23,17 @@ describe('Like', async function () {
       contentObj,
       otherAccount1,
       backendWallet,
-      nonce,
+      nonceAccount1,
     } = await loadFixture(likeContentFixture);
 
     await channel4Contract
       .connect(backendWallet)
-      .toggleLike(contentObj.url, false, nonce + 1, otherAccount1.address);
+      .toggleLike(
+        contentObj.url,
+        false,
+        nonceAccount1 + 1,
+        otherAccount1.address,
+      );
     const content = await channel4Contract.getContent(contentObj.url);
     expect(Number(content.likes)).to.equal(0);
 
