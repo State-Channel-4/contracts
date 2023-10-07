@@ -28,7 +28,7 @@ abstract contract Rewards is Data, OnlyBackend {
         require(rewardsVault > 0, "Rewards vault is empty");
         uint256 userIndex = users.ids[msg.sender];
         User memory user = users.list[userIndex];
-        require(user.registeredAt > block.timestamp + REGISTRATION_THRESHOLD, "User is not registered");
+        require(user.registeredAt + REGISTRATION_THRESHOLD < block.timestamp, "User was recently registered");
         require(user.numberOfLikesInPeriod > LIKES_IN_PERIOD_THRESHOLD, "User has not enough likes in period");
         require(block.timestamp > lastMonth + 30 days, "It is not time to withdraw rewards yet");
         // update the last month if 3 days have passed since last month

@@ -176,7 +176,7 @@ abstract contract Data {
     /// @param userAddress user address
     function getUser(address userAddress) public view returns (User memory) {
         uint256 index = users.ids[userAddress];
-        require(index < tags.list.length, "Invalid User index");
+        require(index < users.list.length, "Invalid User index");
         return users.list[index];
     }
 

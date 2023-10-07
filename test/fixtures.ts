@@ -13,6 +13,7 @@ import {
   SECOND_URL,
   SLASHING_FEE,
   TIME_THRESHOLD,
+  VALUE_TO_DONATE,
 } from '../constants';
 import {
   loadFixture,
@@ -200,5 +201,25 @@ export async function prepareEIP712LitigateLikeFixture() {
     domain,
     types,
     backendWallet,
+  };
+}
+
+export async function prepareWithdrawRewardsFixture() {
+  const { channel4Contract, backendWallet, otherAccount1 } = await loadFixture(
+    deployContractFixture,
+  );
+  await channel4Contract.receiveDonations({ value: VALUE_TO_DONATE });
+  // you need to create a user first
+  await channel4Contract.connect(backendWallet).createUserIfNotExists({
+    userAddress: otherAccount1.address,
+    numberOfLikes: 0,
+    submittedContent: [],
+    registeredAt: 0,
+    numberOfLikesInPeriod: 0,
+  });
+  return {
+    channel4Contract,
+    backendWallet,
+    otherAccount1,
   };
 }
