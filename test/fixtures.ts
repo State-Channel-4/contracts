@@ -5,11 +5,15 @@ import {
   FIRST_TAG,
   FIRST_TITLE,
   FIRST_URL,
+  LIKES_IN_PERIOD_THRESHOLD,
+  REGISTRATION_THRESHOLD,
+  REWARDS_AMOUNT,
   SECOND_TAG,
   SECOND_TITLE,
   SECOND_URL,
   SLASHING_FEE,
   TIME_THRESHOLD,
+  VALUE_TO_DONATE,
 } from '../constants';
 import {
   loadFixture,
@@ -24,14 +28,17 @@ export async function deployContractFixture() {
   const [deployer, otherAccount1, otherAccount2] = await ethers.getSigners();
 
   const Channel4Contract = await ethers.getContractFactory('Channel4Contract');
-  const channel4Contract = await Channel4Contract.deploy(
-    FIRST_TITLE,
-    FIRST_URL,
-    FIRST_TAG,
-    SLASHING_FEE,
-    BACKEND_REGISTRATION_FEE,
-    TIME_THRESHOLD,
-  );
+  const channel4Contract = await Channel4Contract.deploy({
+    title: FIRST_TITLE,
+    url: FIRST_URL,
+    tag: FIRST_TAG,
+    slashingFee: SLASHING_FEE,
+    backendRegistrationFee: BACKEND_REGISTRATION_FEE,
+    timeThreshold: TIME_THRESHOLD,
+    registrationThreshold: REGISTRATION_THRESHOLD,
+    likesInPeriodThreshold: LIKES_IN_PERIOD_THRESHOLD,
+    rewardsAmount: REWARDS_AMOUNT,
+  });
 
   const backendWallet = new ethers.Wallet(BACKEND_PRIVATE_KEY, ethers.provider);
   await setBalance(backendWallet.address, BACKEND_REGISTRATION_FEE * 3n);
@@ -56,6 +63,13 @@ export async function createContentIfNotExistsFixture() {
     otherAccount2,
     backendWallet,
   } = await loadFixture(deployContractFixture);
+  await channel4Contract.connect(backendWallet).createUserIfNotExists({
+    userAddress: otherAccount1.address,
+    numberOfLikes: 0,
+    submittedContent: [],
+    registeredAt: 0,
+    numberOfLikesInPeriod: 0,
+  });
   const contentObj = {
     title: SECOND_TITLE,
     url: SECOND_URL,
@@ -91,10 +105,10 @@ export async function likeContentFixture() {
     contentObj,
     backendWallet,
   } = await loadFixture(createContentIfNotExistsFixture);
-  const nonce = 1;
+  const nonceAccount1 = 1;
   await channel4Contract
     .connect(backendWallet)
-    .toggleLike(contentObj.url, true, nonce, otherAccount1.address);
+    .toggleLike(contentObj.url, true, nonceAccount1, otherAccount1.address);
   return {
     channel4Contract,
     deployer,
@@ -102,7 +116,7 @@ export async function likeContentFixture() {
     otherAccount2,
     contentObj,
     backendWallet,
-    nonce,
+    nonceAccount1,
   };
 }
 
@@ -187,5 +201,25 @@ export async function prepareEIP712LitigateLikeFixture() {
     domain,
     types,
     backendWallet,
+  };
+}
+
+export async function prepareWithdrawRewardsFixture() {
+  const { channel4Contract, backendWallet, otherAccount1 } = await loadFixture(
+    deployContractFixture,
+  );
+  await channel4Contract.receiveDonations({ value: VALUE_TO_DONATE });
+  // you need to create a user first
+  await channel4Contract.connect(backendWallet).createUserIfNotExists({
+    userAddress: otherAccount1.address,
+    numberOfLikes: 0,
+    submittedContent: [],
+    registeredAt: 0,
+    numberOfLikesInPeriod: 0,
+  });
+  return {
+    channel4Contract,
+    backendWallet,
+    otherAccount1,
   };
 }

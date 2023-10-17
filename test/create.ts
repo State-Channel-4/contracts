@@ -3,7 +3,7 @@ import {
   createContentIfNotExistsFixture,
   deployContractFixture,
 } from './fixtures';
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
+import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
 import { FIRST_TAG, SECOND_TAG } from '../constants';
 
 describe('Create', async function () {
@@ -69,7 +69,7 @@ describe('Create', async function () {
         otherAccount1.address,
         otherAccount2.address,
       ]).to.include(user.userAddress);
-      expect(Number(user.numberOfLikedContent)).to.equal(0);
+      expect(Number(user.numberOfLikes)).to.equal(0);
       expect(user.submittedContent.length).to.greaterThanOrEqual(0);
       expect(user.submittedContent.length).to.lessThanOrEqual(2);
       expect(user.submittedContent).to.contain.oneOf([BigInt(0), BigInt(1)]);
@@ -89,20 +89,36 @@ describe('Create', async function () {
   it("Should add new user if it doesn't exist", async function () {
     const { channel4Contract, otherAccount1, backendWallet } =
       await loadFixture(deployContractFixture);
-    await channel4Contract
-      .connect(backendWallet)
-      .createUserIfNotExists(otherAccount1.address);
+    await channel4Contract.connect(backendWallet).createUserIfNotExists({
+      userAddress: otherAccount1.address,
+      numberOfLikes: 0,
+      submittedContent: [],
+      registeredAt: 0,
+      numberOfLikesInPeriod: 0,
+    });
     const allUsers = await channel4Contract.getAllUsers();
+    const timestamp = await time.latest();
+    const user = allUsers[1];
+
     expect(allUsers.length).to.equal(2);
+    expect(user.userAddress).to.equal(otherAccount1.address);
+    expect(Number(user.numberOfLikes)).to.equal(0);
+    expect(user.submittedContent.length).to.equal(0);
+    expect(Number(user.registeredAt)).to.equal(timestamp);
+    expect(Number(user.numberOfLikesInPeriod)).to.equal(0);
   });
 
   it('Should not add user if it exists', async function () {
     const { channel4Contract, deployer, backendWallet } = await loadFixture(
       deployContractFixture,
     );
-    await channel4Contract
-      .connect(backendWallet)
-      .createUserIfNotExists(deployer.address);
+    await channel4Contract.connect(backendWallet).createUserIfNotExists({
+      userAddress: deployer.address,
+      numberOfLikes: 0,
+      submittedContent: [],
+      registeredAt: 0,
+      numberOfLikesInPeriod: 0,
+    });
     const allUsers = await channel4Contract.getAllUsers();
     expect(allUsers.length).to.equal(1);
   });

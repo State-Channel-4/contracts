@@ -19,8 +19,10 @@ abstract contract Data {
 
     struct User {
         address userAddress;
-        uint256 numberOfLikedContent;
+        uint256 numberOfLikes;
         uint256[] submittedContent;
+        uint256 registeredAt;
+        uint256 numberOfLikesInPeriod;
     }
 
     struct Like {
@@ -61,6 +63,14 @@ abstract contract Data {
     struct TagToSync {
         string name;
         address createdBy;
+    }
+
+    struct UserToSync {
+        address userAddress;
+        uint256 numberOfLikes;
+        string[] submittedContent;
+        uint256 registeredAt;
+        uint256 numberOfLikesInPeriod;
     }
 
     struct Pending {
@@ -107,7 +117,7 @@ abstract contract Data {
         contents.list.push(firstContent);
         contents.list[0].tagIds.push(0);
 
-        User memory newUser = User(msgSender, 0, new uint256[](0));
+        User memory newUser = User(msgSender, 0, new uint256[](0), block.timestamp, 0);
         users.list.push(newUser);
         users.list[0].submittedContent.push(0);
         users.ids[msgSender] = 0;
@@ -166,7 +176,7 @@ abstract contract Data {
     /// @param userAddress user address
     function getUser(address userAddress) public view returns (User memory) {
         uint256 index = users.ids[userAddress];
-        require(index < tags.list.length, "Invalid User index");
+        require(index < users.list.length, "Invalid User index");
         return users.list[index];
     }
 
@@ -188,7 +198,7 @@ abstract contract Data {
     function getUserLikedContent(address userAddress) public view returns (Content[] memory) {
         uint256 userIndex = users.ids[userAddress];
         uint256 resultIndex = 0;
-        Content [] memory result = new Content[](users.list[userIndex].numberOfLikedContent);
+        Content [] memory result = new Content[](users.list[userIndex].numberOfLikes);
         for (uint256 i = 0; i < contents.list.length; i++) {
             if (users.likedContent[userAddress][i].liked == true){
                 result[resultIndex] = contents.list[i];

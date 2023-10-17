@@ -12,6 +12,11 @@ export const VALUE_TO_RECHARGE = ethers.parseEther('0.01');
 
 export const TIME_THRESHOLD = BigInt(30);
 
+export const REGISTRATION_THRESHOLD = BigInt(60 * 60 * 24);
+export const LIKES_IN_PERIOD_THRESHOLD = BigInt(3);
+export const REWARDS_AMOUNT = ethers.parseEther('0.0001');
+export const VALUE_TO_DONATE = ethers.parseEther('0.01');
+
 export const FIRST_TITLE = 'Privacy & Scaling Explorations';
 export const FIRST_URL = 'https://pse.dev/';
 export const FIRST_TAG = 'zero-knowledge';
@@ -20,7 +25,15 @@ export const SECOND_TITLE = 'Google';
 export const SECOND_URL = 'https://google.com/';
 export const SECOND_TAG = 'web-search';
 
-export const USERS_TO_ADD = [USER_PUBLIC_ADDRESS];
+export const USERS_TO_ADD = [
+  {
+    userAddress: USER_PUBLIC_ADDRESS,
+    numberOfLikes: 0,
+    submittedContent: [],
+    registeredAt: 0,
+    numberOfLikesInPeriod: 0,
+  },
+];
 export const TAGS_TO_ADD = [
   {
     name: 'music',

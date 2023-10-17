@@ -29,9 +29,9 @@ abstract contract Interact is Data, OnlyBackend {
         // increment nonce related to user-content
         like.nonce = nonce;
         // increment or decrement user's liked content sum
-        user.numberOfLikedContent = liked
-            ? user.numberOfLikedContent + 1
-            : user.numberOfLikedContent - 1;
+        user.numberOfLikes = liked
+            ? user.numberOfLikes + 1
+            : user.numberOfLikes - 1;
         // increment or decrement content's like sum
         contents.list[contentId].likes = liked
             ? contents.list[contentId].likes + 1

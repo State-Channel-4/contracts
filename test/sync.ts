@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import { deployContractFixture } from './fixtures';
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
+import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers';
 import {
   CONTENT_TO_ADD,
   FIRST_TAG,
@@ -9,7 +9,6 @@ import {
   FIRST_URL,
   TAGS_TO_ADD,
   USERS_TO_ADD,
-  USER_PUBLIC_ADDRESS,
 } from '../constants';
 
 describe('Sync', async function () {
@@ -98,10 +97,33 @@ describe('Sync', async function () {
       .syncState(USERS_TO_ADD, [], [], []);
 
     const allUsersInContract = await channel4Contract.getAllUsers();
-    const allUsersInBackend = [deployer.address, ...USERS_TO_ADD];
+    const allUsersInBackend = [
+      {
+        userAddress: deployer.address,
+        numberOfLikes: 0,
+        submittedContent: [0],
+        registeredAt: await time.latest(),
+        numberOfLikesInPeriod: 0,
+      },
+      ...USERS_TO_ADD,
+    ];
 
     for (let i = 0, ni = allUsersInContract.length; i < ni; i++) {
-      expect(allUsersInContract[i].userAddress).to.equal(allUsersInBackend[i]);
+      expect(allUsersInContract[i].userAddress).to.equal(
+        allUsersInBackend[i].userAddress,
+      );
+      expect(Number(allUsersInContract[i].numberOfLikes)).to.equal(
+        allUsersInBackend[i].numberOfLikes,
+      );
+      const contentInContract = allUsersInContract[i].submittedContent;
+      const contentInBackend = allUsersInBackend[i].submittedContent;
+      for (let j = 0, nj = contentInContract.length; j < nj; j++) {
+        expect(Number(contentInContract[j])).to.equal(contentInBackend[j]);
+      }
+      // it is a bit hard to check the registeredAt timestamp so we leave that one in /test/create.ts
+      expect(Number(allUsersInContract[i].numberOfLikesInPeriod)).to.equal(
+        allUsersInBackend[i].numberOfLikesInPeriod,
+      );
     }
   });
 
@@ -113,19 +135,44 @@ describe('Sync', async function () {
 
     // load accounts for test
     const [deployer, alice, bob] = await ethers.getSigners();
-    const usersToAdd = [USER_PUBLIC_ADDRESS, alice.address, bob.address];
-    const allUsers = [deployer.address, ...usersToAdd];
+    const usersToAdd = [
+      USERS_TO_ADD[0],
+      {
+        userAddress: alice.address,
+        numberOfLikes: 0,
+        submittedContent: [],
+        registeredAt: 0,
+        numberOfLikesInPeriod: 0,
+      },
+      {
+        userAddress: bob.address,
+        numberOfLikes: 0,
+        submittedContent: [],
+        registeredAt: 0,
+        numberOfLikesInPeriod: 0,
+      },
+    ];
+    const allUsers = [
+      {
+        userAddress: deployer.address,
+        numberOfLikes: 0,
+        submittedContent: [0],
+        registeredAt: await time.latest(),
+        numberOfLikesInPeriod: 0,
+      },
+      ...usersToAdd,
+    ];
 
     // build likes
     const pendingActions = [
       {
-        submittedBy: usersToAdd[0],
+        submittedBy: usersToAdd[0].userAddress,
         url: CONTENT_TO_ADD[0].url,
         liked: true,
         nonce: 1,
       },
       {
-        submittedBy: usersToAdd[1],
+        submittedBy: usersToAdd[1].userAddress,
         url: CONTENT_TO_ADD[0].url,
         liked: true,
         nonce: 1,
@@ -142,11 +189,9 @@ describe('Sync', async function () {
     const contractUsers = await channel4Contract.getAllUsers();
     for (let i = 0; i < contractUsers.length; i++) {
       // check for expected address
-      expect(contractUsers[i].userAddress).to.equal(allUsers[i]);
+      expect(contractUsers[i].userAddress).to.equal(allUsers[i].userAddress);
       // check for expected like #
-      expect(Number(contractUsers[i].numberOfLikedContent)).to.equal(
-        expectedLikes[i],
-      );
+      expect(Number(contractUsers[i].numberOfLikes)).to.equal(expectedLikes[i]);
     }
   });
 });
