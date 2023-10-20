@@ -11,6 +11,31 @@ To install:
 npm install
 ```
 
+To deploy to Sepolia:
+
+```shell
+npm run deploy:sepolia
+```
+
+Last deployment message:
+
+```
+====================================
+Deploying Channel4Contract to sepolia (11155111)...
+====================================
+Channel4Contract deployed to '0x6189a62161FEDfFeBc5A56ffA419978937618843'
+Deployment parameters:
+ - First URL Title: "Privacy & Scaling Explorations"
+ - First URL: "https://pse.dev/"
+ - First Tag: "zero-knowledge"
+ - Slashing Fee: 0.001 ether
+ - Backend Registration Fee: 0.01 ether
+ - Time Threshold: 30 seconds
+====================================
+Registered contract deployer 0xb4a5714dd934a3391Bc670BEc9aee18b821e1Fd5 as backend
+====================================
+```
+
 Try running some of the following tasks:
 
 ```shell
