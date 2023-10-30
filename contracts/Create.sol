@@ -103,24 +103,39 @@ abstract contract Create is Data, OnlyBackend {
     /// @notice Get a user id from array or add a new user if it doesn't exist
     /// @dev It is used inside createContentIfNotExists but it should be available to be called alone
     /// @dev This function can only be called by the contract or its dependencies
-    /// @param user User object
+    /// @param userAddress User address
+    /// @param numberOfLikes Number of likes the user has given
+    /// @param submittedContent Content ids submitted by the user
+    /// @param registeredAt Timestamp when the user was registered
+    /// @param numberOfLikesInPeriod Number of likes the user has given in the current period
     function _createUserIfNotExists(
-        User calldata user
+        address userAddress,
+        uint256 numberOfLikes,
+        uint256[] calldata submittedContent,
+        uint256 registeredAt,
+        uint256 numberOfLikesInPeriod
     ) internal returns (uint256){
+        User memory user = User(
+            userAddress,
+            numberOfLikes,
+            submittedContent,
+            registeredAt,
+            numberOfLikesInPeriod
+        );
         // check if content is the first one in the array
         address firstUserAddress = users.list[0].userAddress;
-        if (user.userAddress == firstUserAddress){
+        if (userAddress == firstUserAddress){
             users.list[0] = user;
             return 0;
         }
         // check if user is already registered
-        uint256 index = users.ids[user.userAddress];
+        uint256 index = users.ids[userAddress];
         if (index == 0){
             // add new user to array
-            User memory newUser = User(user.userAddress, 0, new uint256[](0), block.timestamp, 0);
+            User memory newUser = User(userAddress, 0, new uint256[](0), block.timestamp, 0);
             users.list.push(newUser);
             uint256 newIndex = users.list.length - 1;
-            users.ids[user.userAddress] = newIndex;
+            users.ids[userAddress] = newIndex;
             return newIndex;
         }
         users.list[index] = user;
@@ -131,6 +146,12 @@ abstract contract Create is Data, OnlyBackend {
     function createUserIfNotExists(
         User calldata user
     ) public onlyBackend returns (uint256) {
-        return _createUserIfNotExists(user);
+        return _createUserIfNotExists(
+            user.userAddress,
+            user.numberOfLikes,
+            user.submittedContent,
+            user.registeredAt,
+            user.numberOfLikesInPeriod
+        );
     }
 }
