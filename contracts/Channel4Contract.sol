@@ -55,8 +55,9 @@ contract Channel4Contract is Data, Create, Interact, Litigate, Rewards {
         ContentToSync[] calldata contentsToAdd,
         Pending[] calldata pendingActions
     ) public onlyBackend {
-        for (uint256 i = 0; i < usersToSync.length; i++)
+        for (uint256 i = 0; i < usersToSync.length; i++) {
             _createUserIfNotExists(usersToSync[i]);
+        }
         for (uint256 i = 0; i < tagsToAdd.length; i++) {
             _createTagIfNotExists(
                 tagsToAdd[i].name,

@@ -87,7 +87,7 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
   /// @notice Verify if EIP-712 signature for like a specific content is valid
   /// @dev For EIP-712 in Solidity check https://gist.github.com/markodayan/e05f524b915f129c4f8500df816a369b
   function verifyMetaTxLike(
-    PendingToLitigate calldata pending,
+    LikeToLitigate calldata pending,
     bytes calldata signature
   ) public view returns (bool) {
     bytes32 digest = _hashTypedDataV4(
@@ -203,7 +203,7 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
   /// @param pending Like to litigate
   /// @param signature EIP-712 signature
   function litigateLike(
-    PendingToLitigate calldata pending,
+    LikeToLitigate calldata pending,
     bytes calldata signature
   ) public returns (bool) {
     require(

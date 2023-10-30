@@ -45,7 +45,7 @@ abstract contract Data {
         uint256 timestamp;
     }
 
-    struct PendingToLitigate {
+    struct LikeToLitigate {
         address submittedBy;
         string url;
         bool liked;
