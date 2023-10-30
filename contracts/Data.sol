@@ -80,13 +80,6 @@ abstract contract Data {
         bool liked;
     }
 
-    struct Pending {
-        address submittedBy;
-        string url;
-        bool liked;
-        uint256 nonce;
-    }
-
     struct Contents {
         Content[] list;
         mapping (string => uint256) ids;

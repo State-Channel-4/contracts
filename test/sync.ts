@@ -143,6 +143,13 @@ describe('Sync', async function () {
         submittedContent: [],
         registeredAt: 0,
         numberOfLikesInPeriod: 0,
+        urlNonces: [
+          {
+            url: CONTENT_TO_ADD[0].url,
+            nonce: 1,
+            liked: true,
+          },
+        ],
       },
       {
         userAddress: bob.address,
@@ -150,6 +157,13 @@ describe('Sync', async function () {
         submittedContent: [],
         registeredAt: 0,
         numberOfLikesInPeriod: 0,
+        urlNonces: [
+          {
+            url: CONTENT_TO_ADD[0].url,
+            nonce: 1,
+            liked: true,
+          },
+        ],
       },
     ];
     const allUsers = [
@@ -159,30 +173,15 @@ describe('Sync', async function () {
         submittedContent: [0],
         registeredAt: await time.latest(),
         numberOfLikesInPeriod: 0,
+        urlNonces: [],
       },
       ...usersToAdd,
-    ];
-
-    // build likes
-    const pendingActions = [
-      {
-        submittedBy: usersToAdd[0].userAddress,
-        url: CONTENT_TO_ADD[0].url,
-        liked: true,
-        nonce: 1,
-      },
-      {
-        submittedBy: usersToAdd[1].userAddress,
-        url: CONTENT_TO_ADD[0].url,
-        liked: true,
-        nonce: 1,
-      },
     ];
 
     // sync state
     await channel4Contract
       .connect(backendWallet)
-      .syncState(usersToAdd, TAGS_TO_ADD, CONTENT_TO_ADD, pendingActions);
+      .syncState(usersToAdd, TAGS_TO_ADD, CONTENT_TO_ADD);
 
     // check for existence of users with expected likes
     const expectedLikes = [0, 1, 1, 0];

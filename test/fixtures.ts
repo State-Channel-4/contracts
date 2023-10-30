@@ -187,11 +187,12 @@ export async function prepareEIP712LitigateLikeFixture() {
     verifyingContract: EIP712Domain.verifyingContract,
   };
   const types = {
-    Pending: [
+    LikeToLitigate: [
       { name: 'submittedBy', type: 'address' },
       { name: 'url', type: 'string' },
       { name: 'liked', type: 'bool' },
       { name: 'nonce', type: 'uint256' },
+      { name: 'timestamp', type: 'uint256' },
     ],
   };
   return {

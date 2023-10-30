@@ -32,6 +32,7 @@ export const USERS_TO_ADD = [
     submittedContent: [],
     registeredAt: 0,
     numberOfLikesInPeriod: 0,
+    urlNonces: [],
   },
 ];
 export const TAGS_TO_ADD = [
