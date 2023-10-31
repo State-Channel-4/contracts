@@ -11,17 +11,17 @@ import {EIP712} from '@openzeppelin/contracts/utils/cryptography/EIP712.sol';
 abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
   uint256 TIME_THRESHOLD = 30;
 
-  bytes32 private constant CONTENT_TO_ADD_TYPE =
+  bytes32 private constant CONTENT_TO_LITIGATE_TYPE =
     keccak256(
       'ContentToLitigate(string title,string url,address submittedBy,uint256 likes,string[] tagIds,uint256 timestamp)'
     );
 
-  bytes32 private constant TAG_TO_SYNC_TYPE =
-    keccak256('TagToSync(string name,address createdBy)');
+  bytes32 private constant TAG_TO_LITIGATE_TYPE =
+    keccak256('TagToLitigate(string name,address createdBy,uint256 timestamp)');
 
-  bytes32 private constant LIKE_TO_VERIFY_TYPE =
+  bytes32 private constant LIKE_TO_LITIGATE_TYPE =
     keccak256(
-      'LikeToLitigate(address submittedBy,string url,bool liked,uint256 nonce)'
+      'LikeToLitigate(address submittedBy,string url,bool liked,uint256 nonce,uint256 timestamp)'
     );
 
   constructor(
@@ -53,7 +53,7 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
     bytes32 digest = _hashTypedDataV4(
       keccak256(
         abi.encode(
-          CONTENT_TO_ADD_TYPE,
+          CONTENT_TO_LITIGATE_TYPE,
           keccak256(bytes(content.title)),
           keccak256(bytes(content.url)),
           content.submittedBy,
@@ -77,7 +77,7 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
   ) public view returns (bool) {
     bytes32 digest = _hashTypedDataV4(
       keccak256(
-        abi.encode(TAG_TO_SYNC_TYPE, keccak256(bytes(tag.name)), tag.createdBy)
+        abi.encode(TAG_TO_LITIGATE_TYPE, keccak256(bytes(tag.name)), tag.createdBy)
       )
     );
     address signer = ECDSA.recover(digest, signature);
@@ -93,7 +93,7 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
     bytes32 digest = _hashTypedDataV4(
       keccak256(
         abi.encode(
-          LIKE_TO_VERIFY_TYPE,
+          LIKE_TO_LITIGATE_TYPE,
           like.submittedBy,
           keccak256(bytes(like.url)),
           like.liked,
