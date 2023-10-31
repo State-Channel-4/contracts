@@ -23,7 +23,7 @@ Last deployment message:
 ====================================
 Deploying Channel4Contract to sepolia (11155111)...
 ====================================
-Channel4Contract deployed to '0x6189a62161FEDfFeBc5A56ffA419978937618843'
+Channel4Contract deployed to '0xC5Ae702852c6C262366dA86DB1CF0BDB9B376c86'
 Deployment parameters:
  - First URL Title: "Privacy & Scaling Explorations"
  - First URL: "https://pse.dev/"
