@@ -132,8 +132,7 @@ abstract contract Create is Data, OnlyBackend {
         uint256 index = users.ids[userAddress];
         if (index == 0){
             // add new user to array
-            User memory newUser = User(userAddress, 0, new uint256[](0), block.timestamp, 0);
-            users.list.push(newUser);
+            users.list.push(user);
             uint256 newIndex = users.list.length - 1;
             users.ids[userAddress] = newIndex;
             return newIndex;
