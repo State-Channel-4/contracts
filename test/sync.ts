@@ -139,13 +139,13 @@ describe('Sync', async function () {
       USERS_TO_ADD[0],
       {
         userAddress: alice.address,
-        numberOfLikes: 0,
+        numberOfLikes: 1,
         submittedContent: [],
         registeredAt: 0,
         numberOfLikesInPeriod: 0,
         urlNonces: [
           {
-            url: CONTENT_TO_ADD[0].url,
+            url: 0, // first content
             nonce: 1,
             liked: true,
           },
@@ -153,13 +153,13 @@ describe('Sync', async function () {
       },
       {
         userAddress: bob.address,
-        numberOfLikes: 0,
+        numberOfLikes: 1,
         submittedContent: [],
         registeredAt: 0,
         numberOfLikesInPeriod: 0,
         urlNonces: [
           {
-            url: CONTENT_TO_ADD[0].url,
+            url: 0, // first content
             nonce: 1,
             liked: true,
           },
@@ -177,20 +177,33 @@ describe('Sync', async function () {
       },
       ...usersToAdd,
     ];
+    CONTENT_TO_ADD[0].likes = 2;
 
     // sync state
     await channel4Contract
       .connect(backendWallet)
       .syncState(usersToAdd, TAGS_TO_ADD, CONTENT_TO_ADD);
 
+    // check for existence of content with expected likes
+    for (let i = 0; i < CONTENT_TO_ADD.length; i++) {
+      const contentToAdd = CONTENT_TO_ADD[i];
+      const contentInContract = await channel4Contract.getContent(
+        contentToAdd.url,
+      );
+      expect(Number(contentToAdd.likes)).to.equal(
+        Number(contentInContract.likes),
+      );
+    }
+
     // check for existence of users with expected likes
-    const expectedLikes = [0, 1, 1, 0];
     const contractUsers = await channel4Contract.getAllUsers();
     for (let i = 0; i < contractUsers.length; i++) {
+      const user = allUsers[i];
+      const contractUser = contractUsers[i];
       // check for expected address
-      expect(contractUsers[i].userAddress).to.equal(allUsers[i].userAddress);
-      // check for expected like #
-      expect(Number(contractUsers[i].numberOfLikes)).to.equal(expectedLikes[i]);
+      expect(contractUser.userAddress).to.equal(user.userAddress);
+      // check for expected like number
+      expect(Number(contractUser.numberOfLikes)).to.equal(user.numberOfLikes);
     }
   });
 });

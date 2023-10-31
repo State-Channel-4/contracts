@@ -81,7 +81,7 @@ contract Channel4Contract is Data, Create, Interact, Litigate, Rewards {
                 contentsToAdd[i].title,
                 contentsToAdd[i].url,
                 contentsToAdd[i].submittedBy,
-                0,
+                contentsToAdd[i].likes,
                 contentsToAdd[i].tagIds
             );
         }

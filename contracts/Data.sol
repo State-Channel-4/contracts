@@ -57,6 +57,7 @@ abstract contract Data {
         string title;
         string url;
         address submittedBy;
+        uint256 likes;
         string[] tagIds;
     }
 
