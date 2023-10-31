@@ -164,6 +164,7 @@ export async function prepareEIP712LitigateTagFixture() {
     TagToSync: [
       { name: 'name', type: 'string' },
       { name: 'createdBy', type: 'address' },
+      { name: 'timestamp', type: 'uint256' },
     ],
   };
   return {

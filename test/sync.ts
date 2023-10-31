@@ -18,7 +18,7 @@ describe('Sync', async function () {
     );
     await channel4Contract
       .connect(backendWallet)
-      .syncState([], [], CONTENT_TO_ADD, []);
+      .syncState([], [], CONTENT_TO_ADD);
 
     const allTags = await channel4Contract.getAllTags();
     const allContentInContract = await channel4Contract.getAllContent();
@@ -61,7 +61,7 @@ describe('Sync', async function () {
     );
     await channel4Contract
       .connect(backendWallet)
-      .syncState([], TAGS_TO_ADD, [], []);
+      .syncState([], TAGS_TO_ADD, []);
 
     const allContent = await channel4Contract.getAllContent();
     const allTags = await channel4Contract.getAllTags();
@@ -94,7 +94,7 @@ describe('Sync', async function () {
     );
     await channel4Contract
       .connect(backendWallet)
-      .syncState(USERS_TO_ADD, [], [], []);
+      .syncState(USERS_TO_ADD, [], []);
 
     const allUsersInContract = await channel4Contract.getAllUsers();
     const allUsersInBackend = [
