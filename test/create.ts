@@ -89,15 +89,15 @@ describe('Create', async function () {
   it("Should add new user if it doesn't exist", async function () {
     const { channel4Contract, otherAccount1, backendWallet } =
       await loadFixture(deployContractFixture);
+    const timestamp = await time.latest();
     await channel4Contract.connect(backendWallet).createUserIfNotExists({
       userAddress: otherAccount1.address,
       numberOfLikes: 0,
       submittedContent: [],
-      registeredAt: 0,
+      registeredAt: timestamp,
       numberOfLikesInPeriod: 0,
     });
     const allUsers = await channel4Contract.getAllUsers();
-    const timestamp = await time.latest();
     const user = allUsers[1];
 
     expect(allUsers.length).to.equal(2);

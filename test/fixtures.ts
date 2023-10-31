@@ -161,9 +161,10 @@ export async function prepareEIP712LitigateTagFixture() {
     verifyingContract: EIP712Domain.verifyingContract,
   };
   const types = {
-    TagToSync: [
+    TagToLitigate: [
       { name: 'name', type: 'string' },
       { name: 'createdBy', type: 'address' },
+      { name: 'timestamp', type: 'uint256' },
     ],
   };
   return {
@@ -187,11 +188,12 @@ export async function prepareEIP712LitigateLikeFixture() {
     verifyingContract: EIP712Domain.verifyingContract,
   };
   const types = {
-    Pending: [
+    LikeToLitigate: [
       { name: 'submittedBy', type: 'address' },
       { name: 'url', type: 'string' },
       { name: 'liked', type: 'bool' },
       { name: 'nonce', type: 'uint256' },
+      { name: 'timestamp', type: 'uint256' },
     ],
   };
   return {

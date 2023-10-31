@@ -335,9 +335,7 @@ describe('Litigate', async function () {
       likes: 4,
       tagIds: contentObj.tags,
     };
-    await channel4Contract
-      .connect(backendWallet)
-      .syncState([], [], [content], []);
+    await channel4Contract.connect(backendWallet).syncState([], [], [content]);
     // run litigate number of likes
     const backendVaultBefore = await channel4Contract.backendVault();
     await channel4Contract

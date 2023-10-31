@@ -57,6 +57,7 @@ abstract contract Data {
         string title;
         string url;
         address submittedBy;
+        uint256 likes;
         string[] tagIds;
     }
 
@@ -68,16 +69,16 @@ abstract contract Data {
     struct UserToSync {
         address userAddress;
         uint256 numberOfLikes;
-        string[] submittedContent;
+        uint256[] submittedContent;
         uint256 registeredAt;
         uint256 numberOfLikesInPeriod;
+        UrlNonce[] urlNonces;
     }
 
-    struct Pending {
-        address submittedBy;
-        string url;
-        bool liked;
+    struct UrlNonce {
+        uint256 url;
         uint256 nonce;
+        bool liked;
     }
 
     struct Contents {

@@ -48,15 +48,27 @@ contract Channel4Contract is Data, Create, Interact, Litigate, Rewards {
     /// @param usersToSync - users to enroll/update in the contract
     /// @param tagsToAdd - tags to add to the contract
     /// @param contentsToAdd - url contents to add to the contract
-    /// @param pendingActions - pending like/unlike actions to facilitate
     function syncState(
-        User[] calldata usersToSync,
+        UserToSync[] calldata usersToSync,
         TagToSync[] calldata tagsToAdd,
-        ContentToSync[] calldata contentsToAdd,
-        Pending[] calldata pendingActions
+        ContentToSync[] calldata contentsToAdd
     ) public onlyBackend {
         for (uint256 i = 0; i < usersToSync.length; i++) {
-            _createUserIfNotExists(usersToSync[i]);
+            UserToSync calldata user = usersToSync[i];
+            _createUserIfNotExists(
+                user.userAddress,
+                user.numberOfLikes,
+                user.submittedContent,
+                user.registeredAt,
+                user.numberOfLikesInPeriod
+            );
+            UrlNonce[] calldata urlNonces = user.urlNonces;
+            for (uint256 j = 0; j < urlNonces.length; j++) {
+                users.likedContent[user.userAddress][urlNonces[j].url] = Like(
+                    urlNonces[j].nonce,
+                    urlNonces[j].liked
+                );
+            }
         }
         for (uint256 i = 0; i < tagsToAdd.length; i++) {
             _createTagIfNotExists(
@@ -69,16 +81,8 @@ contract Channel4Contract is Data, Create, Interact, Litigate, Rewards {
                 contentsToAdd[i].title,
                 contentsToAdd[i].url,
                 contentsToAdd[i].submittedBy,
-                0,
+                contentsToAdd[i].likes,
                 contentsToAdd[i].tagIds
-            );
-        }
-        for (uint i = 0; i < pendingActions.length; i++) {
-            _toggleLike(
-                pendingActions[i].url,
-                pendingActions[i].liked,
-                pendingActions[i].nonce,
-                pendingActions[i].submittedBy
             );
         }
     }
