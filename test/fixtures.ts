@@ -161,7 +161,7 @@ export async function prepareEIP712LitigateTagFixture() {
     verifyingContract: EIP712Domain.verifyingContract,
   };
   const types = {
-    TagToSync: [
+    TagToLitigate: [
       { name: 'name', type: 'string' },
       { name: 'createdBy', type: 'address' },
       { name: 'timestamp', type: 'uint256' },

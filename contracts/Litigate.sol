@@ -77,7 +77,7 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
   ) public view returns (bool) {
     bytes32 digest = _hashTypedDataV4(
       keccak256(
-        abi.encode(TAG_TO_LITIGATE_TYPE, keccak256(bytes(tag.name)), tag.createdBy)
+        abi.encode(TAG_TO_LITIGATE_TYPE, keccak256(bytes(tag.name)), tag.createdBy, tag.timestamp)
       )
     );
     address signer = ECDSA.recover(digest, signature);
@@ -97,7 +97,8 @@ abstract contract Litigate is Data, Create, Interact, Slasher, EIP712 {
           like.submittedBy,
           keccak256(bytes(like.url)),
           like.liked,
-          like.nonce
+          like.nonce,
+          like.timestamp
         )
       )
     );
